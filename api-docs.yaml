@@ -1,0 +1,1396 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+tags:
+- name: Portfolio Valuation
+  description: Get historical portfolio valuations based on metal prices and collector
+    prices
+- name: Coin Catalog
+  description: Search Numista catalog and get pre-populated coin data
+- name: Coins
+  description: Coin collection management endpoints
+- name: Coin Valuation
+  description: Get historical coin valuations based on metal prices and issue prices
+paths:
+  /api/v1/coins/{id}:
+    get:
+      tags:
+      - Coins
+      summary: Get coin by ID
+      description: Retrieve a specific coin by its ID
+      operationId: getCoinById
+      parameters:
+      - name: id
+        in: path
+        description: Coin UUID
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        "404":
+          description: Coin not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "200":
+          description: Coin found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CoinResponse"
+    put:
+      tags:
+      - Coins
+      summary: Update coin
+      description: Update an existing coin's details
+      operationId: updateCoin
+      parameters:
+      - name: id
+        in: path
+        description: Coin UUID
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCoinRequest"
+        required: true
+      responses:
+        "404":
+          description: Coin not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Invalid request data
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "200":
+          description: Coin updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CoinResponse"
+    delete:
+      tags:
+      - Coins
+      summary: Delete coin
+      description: Delete a coin from the collection
+      operationId: deleteCoin
+      parameters:
+      - name: id
+        in: path
+        description: Coin UUID
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        "404":
+          description: Coin not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "204":
+          description: Coin deleted successfully
+  /api/v1/coins:
+    get:
+      tags:
+      - Coins
+      summary: Search coins
+      description: Search and filter coins with pagination. Returns paginated results
+        sorted by creation date descending by default.
+      operationId: searchCoins
+      parameters:
+      - name: country
+        in: query
+        description: Filter by issuer country code (ISO 3166-1 alpha-2)
+        required: false
+        schema:
+          type: string
+      - name: denomination
+        in: query
+        description: Filter by denomination value
+        required: false
+        schema:
+          type: string
+      - name: grade
+        in: query
+        description: Filter by coin grade
+        required: false
+        schema:
+          type: string
+          enum:
+          - GOOD
+          - VERY_GOOD
+          - FINE
+          - VERY_FINE
+          - EXTREMELY_FINE
+          - ABOUT_UNCIRCULATED
+          - UNCIRCULATED
+          - PROOF
+      - name: coinType
+        in: query
+        description: Filter by coin type
+        required: false
+        schema:
+          type: string
+          enum:
+          - BULLION
+          - COMMEMORATIVE_CIRCULATION
+          - STANDARD_CIRCULATION
+          - COMMEMORATIVE_NON_CIRCULATION
+          - OTHER
+      - name: yearFrom
+        in: query
+        description: Filter by minimum year of minting
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: yearTo
+        in: query
+        description: Filter by maximum year of minting
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: metalType
+        in: query
+        description: Filter by metal type
+        required: false
+        schema:
+          type: string
+          enum:
+          - SILVER
+          - GOLD
+          - PLATINUM
+          - NICKEL
+      - name: shape
+        in: query
+        description: Filter by coin shape
+        required: false
+        schema:
+          type: string
+          enum:
+          - CIRCULAR
+          - TRIANGULAR
+          - SQUARE
+          - PENTAGON
+          - HEXAGON
+          - HEPTAGON
+          - OCTAGON
+          - NONAGON
+          - DECAGON
+          - UNDECAGON
+          - DODECAGON
+          - TRIDECAGON
+          - TETRADECAGON
+          - PENTADECAGON
+          - HEXADECAGON
+          - HEPTADECAGON
+          - OCTADECAGON
+          - ENNEADECAGON
+          - ICOSAGON
+          - POLYGONAL
+          - SCALLOPED
+          - IRREGULAR
+          - UNKNOWN
+      - name: currency
+        in: query
+        description: Filter by currency code (ISO 4217)
+        required: false
+        schema:
+          type: string
+      - name: title
+        in: query
+        description: Search by title (partial match)
+        required: false
+        schema:
+          type: string
+      - name: numistaId
+        in: query
+        description: Filter by Numista ID
+        required: false
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Search results returned successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageCoinResponse"
+    post:
+      tags:
+      - Coins
+      summary: Create a new coin
+      description: Add a new coin to the collection
+      operationId: createCoin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCoinRequest"
+        required: true
+      responses:
+        "200":
+          description: Coin created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CoinResponse"
+        "400":
+          description: Invalid request data
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/v1/portfolio/valuation:
+    get:
+      tags:
+      - Portfolio Valuation
+      summary: Get portfolio valuation
+      description: "\n            Returns historical valuation data for the entire\
+        \ portfolio, aggregating all coins.\n\n            Metal valuation: Calculates\
+        \ total value based on pure metal content across all coins,\n            broken\
+        \ down by gold, silver, and platinum grams.\n\n            Collector valuation:\
+        \ Returns aggregated collector prices. For coins with exact issue matches,\n\
+        \            returns exact values. For coins with multiple issue matches,\
+        \ returns min/max range.\n\n            For short timeframes (1h, 1d): Computes\
+        \ real-time from current price data.\n            For longer timeframes (1w,\
+        \ 1m, 1y, max): Uses pre-computed daily snapshots.\n\n            Timeframes:\
+        \ 1h, 1d, 1w, 1m, 1y, max\n        "
+      operationId: getValuation
+      parameters:
+      - name: timeframe
+        in: query
+        description: Timeframe for historical data
+        required: false
+        schema:
+          type: string
+          enum:
+          - 1h
+          - 1d
+          - 1w
+          - 1m
+          - 1y
+          - max
+        example: 1d
+      responses:
+        "200":
+          description: Portfolio valuation returned successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PortfolioValuationResponse"
+  /api/v1/coins/{coinId}/valuation:
+    get:
+      tags:
+      - Coin Valuation
+      summary: Get coin valuation
+      description: "\n            Returns historical valuation data for a coin based\
+        \ on metal prices and issue prices.\n\n            Metal valuation: Calculates\
+        \ value based on pure metal content (weight × purity × metal price).\n   \
+        \         Issue valuation: Returns collector prices from linked issues. If\
+        \ exact match exists, returns exact prices.\n            If multiple issues\
+        \ match, returns min/max range.\n\n            Timeframes: 1h, 1d, 1w, 1m,\
+        \ 1y, max\n        "
+      operationId: getValuation_1
+      parameters:
+      - name: coinId
+        in: path
+        description: Coin UUID
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+      - name: timeframe
+        in: query
+        description: Timeframe for historical data
+        required: false
+        schema:
+          type: string
+          enum:
+          - 1h
+          - 1d
+          - 1w
+          - 1m
+          - 1y
+          - max
+        example: 1d
+      responses:
+        "404":
+          description: Coin not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "200":
+          description: Valuation data returned successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CoinValuationResponse"
+  /api/v1/coins/{coinId}/images:
+    get:
+      tags:
+      - Coins
+      summary: Get coin images
+      description: Retrieve all images for a specific coin
+      operationId: getCoinImages
+      parameters:
+      - name: coinId
+        in: path
+        description: Coin UUID
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        "200":
+          description: List of coin images returned successfully
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CoinImageResponse"
+  /api/v1/coins/{coinId}/images/{imageId}:
+    get:
+      tags:
+      - Coins
+      summary: Get coin image metadata
+      description: Retrieve metadata for a specific coin image
+      operationId: getCoinImage
+      parameters:
+      - name: coinId
+        in: path
+        description: Coin UUID
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+      - name: imageId
+        in: path
+        description: Image UUID
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 660e8400-e29b-41d4-a716-446655440001
+      responses:
+        "200":
+          description: Image metadata returned successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CoinImageResponse"
+        "404":
+          description: Image not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CoinImageResponse"
+  /api/v1/coins/{coinId}/images/{imageId}/content:
+    get:
+      tags:
+      - Coins
+      summary: Get coin image content
+      description: Download the actual image file for a specific coin image. Returns
+        the binary image data with appropriate Content-Type header.
+      operationId: getCoinImageContent
+      parameters:
+      - name: coinId
+        in: path
+        description: Coin UUID
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+      - name: imageId
+        in: path
+        description: Image UUID
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 660e8400-e29b-41d4-a716-446655440001
+      responses:
+        "404":
+          description: Image not found
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        "200":
+          description: Image file returned successfully
+          content:
+            image/*: {}
+  /api/v1/catalog/types/{typeId}:
+    get:
+      tags:
+      - Coin Catalog
+      summary: Get coin details for form population
+      description: "Retrieve detailed coin data from Numista to pre-populate the coin\
+        \ creation form. Returns physical specifications, composition, denomination,\
+        \ and image URLs."
+      operationId: getCoinDetails
+      parameters:
+      - name: typeId
+        in: path
+        description: Numista type ID
+        required: true
+        schema:
+          type: string
+        example: 12345
+      responses:
+        "200":
+          description: Coin details returned successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CatalogCoinDetails"
+        "404":
+          description: Coin type not found in Numista catalog
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CatalogCoinDetails"
+  /api/v1/catalog/search:
+    get:
+      tags:
+      - Coin Catalog
+      summary: Search coin catalog
+      description: "Search Numista catalog for coins by title, description, or other\
+        \ attributes. Returns paginated results."
+      operationId: searchCatalog
+      parameters:
+      - name: query
+        in: query
+        description: Search query text
+        required: true
+        schema:
+          type: string
+        example: American Eagle
+      - name: page
+        in: query
+        description: Page number (1-based)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+        example: 1
+      - name: pageSize
+        in: query
+        description: Results per page (max 50)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+        example: 20
+      responses:
+        "200":
+          description: Search results returned successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CatalogSearchResponse"
+components:
+  schemas:
+    UpdateCoinRequest:
+      type: object
+      description: Request payload for updating an existing coin
+      properties:
+        title:
+          type: string
+          description: Coin title/name
+          example: American Gold Eagle 1 oz
+        denomination:
+          type: number
+          description: Face value denomination
+          example: 50
+          minimum: 0.0
+        year:
+          type: integer
+          format: int32
+          description: Year of minting
+          example: 2023
+          maximum: 2100
+          minimum: 1
+        countryCode:
+          type: string
+          description: ISO 3166-1 alpha-2 country code of issuer
+          example: US
+          maxLength: 2
+          minLength: 2
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: USD
+        mintMark:
+          type: string
+          description: Mint mark identifier
+          example: W
+        grade:
+          type: string
+          description: Coin grade/condition
+          enum:
+          - GOOD
+          - VERY_GOOD
+          - FINE
+          - VERY_FINE
+          - EXTREMELY_FINE
+          - ABOUT_UNCIRCULATED
+          - UNCIRCULATED
+          - PROOF
+          example: UNCIRCULATED
+        coinType:
+          type: string
+          description: Type of coin
+          enum:
+          - BULLION
+          - COMMEMORATIVE_CIRCULATION
+          - STANDARD_CIRCULATION
+          - COMMEMORATIVE_NON_CIRCULATION
+          - OTHER
+          example: BULLION
+        notes:
+          type: string
+          description: Additional notes about the coin
+          example: First year of issue
+        numistaId:
+          type: string
+          description: Numista catalog type ID
+          example: 12345
+          maxLength: 50
+          minLength: 0
+        metalType:
+          type: string
+          description: Primary metal composition
+          enum:
+          - SILVER
+          - GOLD
+          - PLATINUM
+          - NICKEL
+          example: GOLD
+        weightInGrams:
+          type: number
+          description: Total weight in grams
+          example: 31.1035
+          minimum: 0.0
+        purity:
+          type: integer
+          format: int32
+          description: "Metal purity in parts per thousand (e.g., 999 for 99.9%)"
+          example: 999
+          maximum: 1000
+          minimum: 1
+        rarityScore:
+          type: integer
+          format: int32
+          description: Rarity score from 1 (common) to 100 (extremely rare)
+          example: 25
+          maximum: 100
+          minimum: 1
+        quantity:
+          type: integer
+          format: int32
+          default: "1"
+          description: Number of identical coins
+          example: 1
+          minimum: 1
+        shape:
+          type: string
+          description: Physical shape of the coin
+          enum:
+          - CIRCULAR
+          - TRIANGULAR
+          - SQUARE
+          - PENTAGON
+          - HEXAGON
+          - HEPTAGON
+          - OCTAGON
+          - NONAGON
+          - DECAGON
+          - UNDECAGON
+          - DODECAGON
+          - TRIDECAGON
+          - TETRADECAGON
+          - PENTADECAGON
+          - HEXADECAGON
+          - HEPTADECAGON
+          - OCTADECAGON
+          - ENNEADECAGON
+          - ICOSAGON
+          - POLYGONAL
+          - SCALLOPED
+          - IRREGULAR
+          - UNKNOWN
+          example: CIRCULAR
+        diameterInMillimeters:
+          type: number
+          description: Coin diameter in millimeters
+          example: 32.7
+        thicknessInMillimeters:
+          type: number
+          description: Coin thickness in millimeters
+          example: 2.87
+      required:
+      - coinType
+      - countryCode
+      - currency
+      - grade
+      - title
+      - weightInGrams
+      - year
+    ErrorResponse:
+      type: object
+      description: Error response returned for failed requests
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Coin not found with id: 550e8400-e29b-41d4-a716-446655440000"
+    CoinResponse:
+      type: object
+      description: Coin details response
+      properties:
+        id:
+          type: string
+          description: Unique coin identifier (UUID)
+          example: 550e8400-e29b-41d4-a716-446655440000
+        title:
+          type: string
+          description: Coin title/name
+          example: American Gold Eagle 1 oz
+        denomination:
+          type: number
+          description: Face value denomination
+          example: 50
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: USD
+        yearOfMinting:
+          type: integer
+          format: int32
+          description: Year of minting
+          example: 2023
+        issuerCountry:
+          type: string
+          description: ISO 3166-1 alpha-2 country code of issuer
+          example: US
+        mintMark:
+          type: string
+          description: Mint mark identifier
+          example: W
+        grade:
+          type: string
+          description: Coin grade/condition
+          enum:
+          - GOOD
+          - VERY_GOOD
+          - FINE
+          - VERY_FINE
+          - EXTREMELY_FINE
+          - ABOUT_UNCIRCULATED
+          - UNCIRCULATED
+          - PROOF
+          example: UNCIRCULATED
+        type:
+          type: string
+          description: Type of coin
+          enum:
+          - BULLION
+          - COMMEMORATIVE_CIRCULATION
+          - STANDARD_CIRCULATION
+          - COMMEMORATIVE_NON_CIRCULATION
+          - OTHER
+          example: BULLION
+        notes:
+          type: string
+          description: Additional notes about the coin
+          example: First year of issue
+        numistaId:
+          type: string
+          description: Numista catalog type ID
+          example: 12345
+        shape:
+          type: string
+          description: Physical shape of the coin
+          enum:
+          - CIRCULAR
+          - TRIANGULAR
+          - SQUARE
+          - PENTAGON
+          - HEXAGON
+          - HEPTAGON
+          - OCTAGON
+          - NONAGON
+          - DECAGON
+          - UNDECAGON
+          - DODECAGON
+          - TRIDECAGON
+          - TETRADECAGON
+          - PENTADECAGON
+          - HEXADECAGON
+          - HEPTADECAGON
+          - OCTADECAGON
+          - ENNEADECAGON
+          - ICOSAGON
+          - POLYGONAL
+          - SCALLOPED
+          - IRREGULAR
+          - UNKNOWN
+          example: CIRCULAR
+        weightInGrams:
+          type: number
+          description: Total weight in grams
+          example: 31.1035
+        purity:
+          type: number
+          description: "Metal purity as decimal (e.g., 0.999 for 99.9%)"
+          example: 999
+        metalType:
+          type: string
+          description: Primary metal composition
+          enum:
+          - SILVER
+          - GOLD
+          - PLATINUM
+          - NICKEL
+          example: GOLD
+        rarity:
+          $ref: "#/components/schemas/Rarity"
+          description: Rarity information
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the coin was added to the collection
+          example: 2023-06-15T10:30:00Z
+        diameterInMillimeters:
+          type: number
+          description: Coin diameter in millimeters
+          example: 32.7
+        thicknessInMillimeters:
+          type: number
+          description: Coin thickness in millimeters
+          example: 2.87
+        quantity:
+          type: integer
+          format: int32
+          description: Number of identical coins
+          example: 1
+    Rarity:
+      type: object
+      properties:
+        score:
+          type: integer
+          format: int32
+    CreateCoinRequest:
+      type: object
+      description: Request payload for creating a new coin
+      properties:
+        title:
+          type: string
+          description: Coin title/name
+          example: American Gold Eagle 1 oz
+        denomination:
+          type: number
+          description: Face value denomination
+          example: 50
+          minimum: 0.0
+        year:
+          type: integer
+          format: int32
+          description: Year of minting
+          example: 2023
+          maximum: 2100
+          minimum: 1
+        countryCode:
+          type: string
+          description: ISO 3166-1 alpha-2 country code of issuer
+          example: US
+          maxLength: 2
+          minLength: 2
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: USD
+        mintMark:
+          type: string
+          description: Mint mark identifier
+          example: W
+        grade:
+          type: string
+          description: Coin grade/condition
+          enum:
+          - GOOD
+          - VERY_GOOD
+          - FINE
+          - VERY_FINE
+          - EXTREMELY_FINE
+          - ABOUT_UNCIRCULATED
+          - UNCIRCULATED
+          - PROOF
+          example: UNCIRCULATED
+        coinType:
+          type: string
+          description: Type of coin
+          enum:
+          - BULLION
+          - COMMEMORATIVE_CIRCULATION
+          - STANDARD_CIRCULATION
+          - COMMEMORATIVE_NON_CIRCULATION
+          - OTHER
+          example: BULLION
+        notes:
+          type: string
+          description: Additional notes about the coin
+          example: First year of issue
+        numistaId:
+          type: string
+          description: Numista catalog type ID for automatic data fetching
+          example: 12345
+          maxLength: 50
+          minLength: 0
+        metalType:
+          type: string
+          description: Primary metal composition
+          enum:
+          - SILVER
+          - GOLD
+          - PLATINUM
+          - NICKEL
+          example: GOLD
+        weightInGrams:
+          type: number
+          description: Total weight in grams
+          example: 31.1035
+          minimum: 0.0
+        purity:
+          type: integer
+          format: int32
+          description: "Metal purity in parts per thousand (e.g., 999 for 99.9%)"
+          example: 999
+          maximum: 1000
+          minimum: 1
+        quantity:
+          type: integer
+          format: int32
+          default: "1"
+          description: Number of identical coins
+          example: 1
+          minimum: 1
+        rarityScore:
+          type: integer
+          format: int32
+          description: Rarity score from 1 (common) to 100 (extremely rare)
+          example: 25
+          maximum: 100
+          minimum: 1
+        diameterInMillimeters:
+          type: number
+          description: Coin diameter in millimeters
+          example: 32.7
+        thicknessInMillimeters:
+          type: number
+          description: Coin thickness in millimeters
+          example: 2.87
+      required:
+      - coinType
+      - countryCode
+      - currency
+      - grade
+      - title
+      - weightInGrams
+      - year
+    PortfolioCollectorPointResponse:
+      type: object
+      description: Single portfolio collector valuation data point
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the valuation
+          example: 2023-06-15T10:30:00Z
+        exactValue:
+          type: number
+          description: Exact total value if all coins have exact matches (null if
+            any use ranges)
+          example: 52340.0
+        minValue:
+          type: number
+          description: Minimum total value across all coins
+          example: 48500.0
+        maxValue:
+          type: number
+          description: Maximum total value across all coins
+          example: 56200.0
+    PortfolioCollectorValuationResponse:
+      type: object
+      description: Portfolio collector valuation from issue prices
+      properties:
+        dataPoints:
+          type: array
+          description: Historical data points
+          items:
+            $ref: "#/components/schemas/PortfolioCollectorPointResponse"
+    PortfolioMetalPointResponse:
+      type: object
+      description: Single portfolio metal valuation data point
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the valuation
+          example: 2023-06-15T10:30:00Z
+        totalValue:
+          type: number
+          description: Total metal value across all coins
+          example: 45678.9
+        goldGrams:
+          type: number
+          description: Total pure gold grams in portfolio
+          example: 62.207
+        silverGrams:
+          type: number
+          description: Total pure silver grams in portfolio
+          example: 311.035
+        platinumGrams:
+          type: number
+          description: Total pure platinum grams in portfolio
+          example: 31.103
+    PortfolioMetalValuationResponse:
+      type: object
+      description: Portfolio metal valuation with breakdown by metal type
+      properties:
+        dataPoints:
+          type: array
+          description: Historical data points with metal breakdown
+          items:
+            $ref: "#/components/schemas/PortfolioMetalPointResponse"
+    PortfolioValuationResponse:
+      type: object
+      description: Aggregated portfolio valuation including metal and collector values
+      properties:
+        timeframe:
+          type: string
+          description: Requested timeframe
+          enum:
+          - 1h
+          - 1d
+          - 1w
+          - 1m
+          - 1y
+          - max
+          example: 1d
+        currency:
+          type: string
+          description: Currency code for all values
+          example: USD
+        metalValuation:
+          $ref: "#/components/schemas/PortfolioMetalValuationResponse"
+          description: Aggregated metal-based valuation (null if no coins with metal
+            content)
+        collectorValuation:
+          $ref: "#/components/schemas/PortfolioCollectorValuationResponse"
+          description: Aggregated collector valuation (null if no coins with issue
+            data)
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+        sort:
+          type: array
+          items:
+            type: string
+    PageCoinResponse:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        first:
+          type: boolean
+        last:
+          type: boolean
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/CoinResponse"
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        unpaged:
+          type: boolean
+        paged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+    SortObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        unsorted:
+          type: boolean
+        sorted:
+          type: boolean
+    CoinValuationResponse:
+      type: object
+      description: Coin valuation data including metal and collector values
+      properties:
+        coinId:
+          type: string
+          description: Coin identifier (UUID)
+          example: 550e8400-e29b-41d4-a716-446655440000
+        timeframe:
+          type: string
+          description: Requested timeframe
+          enum:
+          - 1h
+          - 1d
+          - 1w
+          - 1m
+          - 1y
+          - max
+          example: 1d
+        metalValuation:
+          $ref: "#/components/schemas/MetalValuationResponse"
+          description: Metal-based valuation (null if coin has no metal type or purity)
+        issueValuation:
+          $ref: "#/components/schemas/IssueValuationResponse"
+          description: Collector/issue-based valuation (null if no linked issues)
+    IssueValuationPointResponse:
+      type: object
+      description: Single issue valuation data point
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the price data
+          example: 2023-06-15T10:30:00Z
+        price:
+          type: number
+          description: Exact price if single issue match (null if range)
+          example: 2150.0
+        minPrice:
+          type: number
+          description: Minimum price across matched issues (null if exact match)
+          example: 1950.0
+        maxPrice:
+          type: number
+          description: Maximum price across matched issues (null if exact match)
+          example: 2350.0
+    IssueValuationResponse:
+      type: object
+      description: Collector/issue-based valuation from Numista price data
+      properties:
+        grade:
+          type: string
+          description: Grade used for valuation (null if aggregating multiple grades)
+          example: UNCIRCULATED
+        currency:
+          type: string
+          description: Currency code for values
+          example: USD
+        dataPoints:
+          type: array
+          description: Historical price data points
+          items:
+            $ref: "#/components/schemas/IssueValuationPointResponse"
+        exactMatch:
+          type: boolean
+    MetalValuationPointResponse:
+      type: object
+      description: Single metal valuation data point
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the price quote
+          example: 2023-06-15T10:30:00Z
+        pricePerGram:
+          type: number
+          description: Metal price per gram at this timestamp
+          example: 62.45
+        totalValue:
+          type: number
+          description: Total metal value (pureMetalMass × pricePerGram)
+          example: 1941.67
+    MetalValuationResponse:
+      type: object
+      description: Metal-based valuation calculated from precious metal content
+      properties:
+        metalType:
+          type: string
+          description: Metal type
+          example: GOLD
+        pureMetalMassInGrams:
+          type: number
+          description: Pure metal mass in grams (weight × purity)
+          example: 31.072
+        currency:
+          type: string
+          description: Currency code for values
+          example: USD
+        dataPoints:
+          type: array
+          description: Historical price data points
+          items:
+            $ref: "#/components/schemas/MetalValuationPointResponse"
+    CoinImageResponse:
+      type: object
+      description: Coin image metadata
+      properties:
+        id:
+          type: string
+          description: Unique image identifier (UUID)
+          example: 660e8400-e29b-41d4-a716-446655440001
+        coinId:
+          type: string
+          description: Parent coin identifier (UUID)
+          example: 550e8400-e29b-41d4-a716-446655440000
+        side:
+          type: string
+          description: Side of the coin shown in the image
+          enum:
+          - OBVERSE
+          - REVERSE
+          example: OBVERSE
+        fileName:
+          type: string
+          description: Original file name
+          example: gold-eagle-obverse.jpg
+        contentType:
+          type: string
+          description: MIME content type
+          example: image/jpeg
+        sizeInBytes:
+          type: integer
+          format: int64
+          description: File size in bytes
+          example: 245678
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the image was uploaded
+          example: 2023-06-15T10:30:00Z
+    CatalogCoinDetails:
+      type: object
+      description: Detailed coin information from Numista catalog for form pre-population
+      properties:
+        numistaId:
+          type: string
+          description: Numista type ID
+          example: 12345
+        title:
+          type: string
+          description: Coin title
+          example: 1
+        coinType:
+          type: string
+          description: "Type of coin (BULLION, COMMEMORATIVE_CIRCULATION, etc.)"
+          example: BULLION
+        issuerCode:
+          type: string
+          description: ISO 3166-1 alpha-2 country code of issuer
+          example: US
+        issuerName:
+          type: string
+          description: Full name of the issuing country/entity
+          example: United States
+        weightInGrams:
+          type: number
+          description: Weight in grams
+          example: 31.1035
+        diameterInMillimeters:
+          type: number
+          description: Diameter in millimeters
+          example: 40.6
+        thicknessInMillimeters:
+          type: number
+          description: Thickness in millimeters
+          example: 2.98
+        metalType:
+          type: string
+          description: "Detected metal type (GOLD, SILVER, PLATINUM, NICKEL)"
+          example: SILVER
+        purity:
+          type: integer
+          format: int32
+          description: Metal purity in parts per thousand
+          example: 999
+        compositionText:
+          type: string
+          description: Full composition text from Numista
+          example: Silver (.999)
+        denomination:
+          type: number
+          description: Parsed denomination value
+          example: 1
+        valueText:
+          type: string
+          description: Full denomination text from Numista
+          example: 1
+        suggestedCurrency:
+          type: string
+          description: Suggested ISO 4217 currency code based on issuer
+          example: USD
+        minYear:
+          type: integer
+          format: int32
+          description: Earliest year of issue
+          example: 1986
+        maxYear:
+          type: integer
+          format: int32
+          description: Latest year of issue
+          example: 2023
+        obverseImageUrl:
+          type: string
+          description: URL to full-size obverse image
+          example: https://en.numista.com/catalogue/photos/...
+        reverseImageUrl:
+          type: string
+          description: URL to full-size reverse image
+          example: https://en.numista.com/catalogue/photos/...
+        obverseThumbnailUrl:
+          type: string
+          description: URL to obverse thumbnail
+          example: https://en.numista.com/catalogue/photos/...
+        reverseThumbnailUrl:
+          type: string
+          description: URL to reverse thumbnail
+          example: https://en.numista.com/catalogue/photos/...
+        shape:
+          type: string
+          description: Detected coin shape
+          example: Round
+        rulers:
+          type: array
+          description: List of rulers/leaders depicted on the coin
+          example:
+          - Walking Liberty
+          items:
+            type: string
+    CatalogSearchResponse:
+      type: object
+      description: Catalog search results
+      properties:
+        totalCount:
+          type: integer
+          format: int32
+          description: Total number of matching results in the catalog
+          example: 1523
+        results:
+          type: array
+          description: List of matching coin types for the current page
+          items:
+            $ref: "#/components/schemas/CatalogSearchResultItemResponse"
+    CatalogSearchResultItemResponse:
+      type: object
+      description: Catalog search result item
+      properties:
+        typeId:
+          type: string
+          description: Numista type ID
+          example: 12345
+        title:
+          type: string
+          description: Coin title
+          example: 1
+        category:
+          type: string
+          description: Coin category
+          example: Bullion coins
+        issuerCode:
+          type: string
+          description: ISO 3166-1 alpha-2 country code of issuer
+          example: US
+        issuerName:
+          type: string
+          description: Full name of the issuing country/entity
+          example: United States
+        minYear:
+          type: integer
+          format: int32
+          description: Earliest year of issue
+          example: 1986
+        maxYear:
+          type: integer
+          format: int32
+          description: Latest year of issue (null if still being minted)
+          example: 2023
+        obverseThumbnailUrl:
+          type: string
+          description: URL to obverse side thumbnail image
+          example: https://en.numista.com/catalogue/photos/...
+        reverseThumbnailUrl:
+          type: string
+          description: URL to reverse side thumbnail image
+          example: https://en.numista.com/catalogue/photos/...

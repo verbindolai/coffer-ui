@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    @apply bg-bg-primary text-text-primary min-h-screen;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-secondary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-medium rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-border-active;
+  }
+}
+
+@layer components {
+  /* Button styles */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded font-medium text-sm transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-bg-primary hover:brightness-110;
+  }
+
+  .btn-secondary {
+    @apply bg-bg-tertiary text-text-primary border border-border-subtle hover:bg-bg-card hover:border-border-medium;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-text-secondary hover:text-text-primary hover:bg-bg-tertiary;
+  }
+
+  .btn-danger {
+    @apply bg-negative/10 text-negative border border-negative/20 hover:bg-negative/20;
+  }
+
+  /* Input styles */
+  .input {
+    @apply w-full px-3 py-2 bg-bg-tertiary border border-border-subtle rounded text-text-primary placeholder-text-muted focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/20 transition-all;
+  }
+
+  .input-label {
+    @apply block text-xs font-medium text-text-secondary mb-1.5 uppercase tracking-wider;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-bg-secondary border border-border-subtle rounded-xl p-6 shadow-card;
+  }
+
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium;
+  }
+
+  .badge-gold {
+    @apply bg-accent-gold/15 text-accent-gold;
+  }
+
+  .badge-silver {
+    @apply bg-gray-400/15 text-gray-300;
+  }
+
+  .badge-platinum {
+    @apply bg-gray-200/15 text-gray-100;
+  }
+
+  /* Table styles */
+  .table-header {
+    @apply text-xs font-medium text-text-muted uppercase tracking-wider text-left px-4 py-3;
+  }
+
+  .table-cell {
+    @apply px-4 py-3 text-sm text-text-primary;
+  }
+
+  .table-row {
+    @apply border-b border-border-subtle hover:bg-bg-card transition-colors;
+  }
+
+  /* Stats indicator */
+  .stat-indicator {
+    @apply w-0.5 rounded-full;
+  }
+
+  .stat-indicator-metal {
+    background: linear-gradient(180deg, #F7931A 0%, rgba(247, 147, 26, 0.2) 100%);
+  }
+
+  .stat-indicator-collector {
+    background: linear-gradient(180deg, #10B981 0%, rgba(20, 184, 166, 0.2) 100%);
+  }
+
+  /* Loading spinner */
+  .spinner {
+    @apply w-8 h-8 border-2 border-border-subtle border-t-accent rounded-full animate-spin;
+  }
+
+  /* Empty state */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-16 text-center;
+  }
+
+  /* Controls group (for timeframe selector, etc.) */
+  .controls-group {
+    @apply flex bg-bg-card backdrop-blur-sm border border-border-subtle rounded-lg p-1;
+  }
+
+  .control-btn {
+    @apply flex items-center gap-1.5 px-3 py-2 rounded text-text-muted text-sm font-medium cursor-pointer transition-all hover:text-text-secondary;
+  }
+
+  .control-btn.active {
+    @apply bg-bg-tertiary text-text-primary;
+  }
+
+  .timeframe-btn {
+    @apply font-mono text-xs font-medium px-3 py-2 rounded text-text-muted cursor-pointer transition-all hover:text-text-secondary hover:bg-bg-card;
+  }
+
+  .timeframe-btn.active {
+    @apply bg-accent-gold text-bg-primary shadow-gold-glow;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glow-gold {
+    @apply shadow-gold-glow;
+  }
+
+  .glow-cyan {
+    @apply shadow-cyan-glow;
+  }
+
+  .glow-emerald {
+    @apply shadow-emerald-glow;
+  }
+}
