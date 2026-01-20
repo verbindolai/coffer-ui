@@ -38,7 +38,7 @@ export interface CatalogCoinDetails {
   reverseImageUrl: string | null;
   obverseThumbnailUrl: string | null;
   reverseThumbnailUrl: string | null;
-  shape: string | null;
+  shape: string;
   rulers: string[];
 }
 

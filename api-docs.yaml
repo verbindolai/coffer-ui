@@ -182,6 +182,7 @@ paths:
           - GOLD
           - PLATINUM
           - NICKEL
+          - BASE_METAL
       - name: shape
         in: query
         description: Filter by coin shape
@@ -601,6 +602,7 @@ components:
           - GOLD
           - PLATINUM
           - NICKEL
+          - BASE_METAL
           example: GOLD
         weightInGrams:
           type: number
@@ -788,6 +790,7 @@ components:
           - GOLD
           - PLATINUM
           - NICKEL
+          - BASE_METAL
           example: GOLD
         rarity:
           $ref: "#/components/schemas/Rarity"
@@ -891,6 +894,7 @@ components:
           - GOLD
           - PLATINUM
           - NICKEL
+          - BASE_METAL
           example: GOLD
         weightInGrams:
           type: number
@@ -926,6 +930,35 @@ components:
           type: number
           description: Coin thickness in millimeters
           example: 2.87
+        shape:
+          type: string
+          description: Physical shape of the coin
+          enum:
+          - CIRCULAR
+          - TRIANGULAR
+          - SQUARE
+          - PENTAGON
+          - HEXAGON
+          - HEPTAGON
+          - OCTAGON
+          - NONAGON
+          - DECAGON
+          - UNDECAGON
+          - DODECAGON
+          - TRIDECAGON
+          - TETRADECAGON
+          - PENTADECAGON
+          - HEXADECAGON
+          - HEPTADECAGON
+          - OCTADECAGON
+          - ENNEADECAGON
+          - ICOSAGON
+          - POLYGONAL
+          - SCALLOPED
+          - IRREGULAR
+          - UNKNOWN
+          default: CIRCULAR
+          example: CIRCULAR
       required:
       - coinType
       - countryCode
@@ -1278,7 +1311,7 @@ components:
           example: 2.98
         metalType:
           type: string
-          description: "Detected metal type (GOLD, SILVER, PLATINUM, NICKEL)"
+          description: "Detected metal type (GOLD, SILVER, PLATINUM, NICKEL, BASE_METAL)"
           example: SILVER
         purity:
           type: integer

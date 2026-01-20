@@ -22,7 +22,8 @@ export enum MetalType {
   GOLD = 'GOLD',
   SILVER = 'SILVER',
   PLATINUM = 'PLATINUM',
-  NICKEL = 'NICKEL'
+  NICKEL = 'NICKEL',
+  BASE_METAL = 'BASE_METAL'
 }
 
 export enum CoinShape {
@@ -80,7 +81,8 @@ export const METAL_TYPE_LABELS: Record<MetalType, string> = {
   [MetalType.GOLD]: 'Gold',
   [MetalType.SILVER]: 'Silver',
   [MetalType.PLATINUM]: 'Platinum',
-  [MetalType.NICKEL]: 'Nickel'
+  [MetalType.NICKEL]: 'Nickel',
+  [MetalType.BASE_METAL]: 'Base Metal'
 };
 
 export const COIN_SHAPE_LABELS: Record<CoinShape, string> = {
@@ -155,11 +157,10 @@ export interface CreateCoinRequest {
   rarityScore?: number;
   diameterInMillimeters?: number;
   thicknessInMillimeters?: number;
-}
-
-export interface UpdateCoinRequest extends CreateCoinRequest {
   shape?: CoinShape;
 }
+
+export interface UpdateCoinRequest extends CreateCoinRequest {}
 
 export interface CoinImageResponse {
   id: string;

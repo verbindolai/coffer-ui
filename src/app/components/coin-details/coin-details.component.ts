@@ -17,7 +17,8 @@ import { formatCurrency, formatPurity, formatWeight, formatDimension, formatDate
       <!-- Header -->
       <div class="flex items-center gap-4">
         <a routerLink="/" class="btn btn-ghost">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
           Back
@@ -61,7 +62,8 @@ import { formatCurrency, formatPurity, formatWeight, formatDimension, formatDate
                   </p>
                 </div>
                 <a [routerLink]="['/coins', coin()!.id, 'edit']" class="btn btn-secondary">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                   </svg>
@@ -135,7 +137,8 @@ import { formatCurrency, formatPurity, formatWeight, formatDimension, formatDate
                 @if (coin()!.numistaId) {
                   <div>
                     <p class="text-xs text-text-muted uppercase tracking-wider">Numista ID</p>
-                    <p class="text-text-primary font-medium">{{ coin()!.numistaId }}</p>
+                    <a class="text-text-primary font-medium underline"
+                       [href]="'https://en.numista.com/' + coin()!.numistaId">{{ coin()!.numistaId }}</a>
                   </div>
                 }
               </div>

@@ -305,17 +305,15 @@ import { CatalogCoinDetails } from '../../models/catalog.model';
                 />
               </div>
 
-              <!-- Shape (only in edit mode) -->
-              @if (isEditMode()) {
-                <div>
-                  <label class="input-label">Shape</label>
-                  <select formControlName="shape" class="input">
-                    @for (shape of shapes; track shape) {
-                      <option [value]="shape">{{ shapeLabels[shape] }}</option>
-                    }
-                  </select>
-                </div>
-              }
+              <!-- Shape -->
+              <div>
+                <label class="input-label">Shape</label>
+                <select formControlName="shape" class="input">
+                  @for (shape of shapes; track shape) {
+                    <option [value]="shape">{{ shapeLabels[shape] }}</option>
+                  }
+                </select>
+              </div>
             </div>
           </div>
 
@@ -588,10 +586,10 @@ export class CoinFormComponent implements OnInit {
     if (formValue.numistaId) request.numistaId = formValue.numistaId;
     if (formValue.rarityScore) request.rarityScore = formValue.rarityScore;
     if (formValue.notes) request.notes = formValue.notes;
+    if (formValue.shape) request.shape = formValue.shape;
 
     if (this.isEditMode() && this.coinId()) {
       const updateRequest: UpdateCoinRequest = { ...request };
-      if (formValue.shape) updateRequest.shape = formValue.shape;
 
       this.coinService.updateCoin(this.coinId()!, updateRequest).subscribe({
         next: (coin) => {
@@ -708,7 +706,8 @@ export class CoinFormComponent implements OnInit {
       diameterInMillimeters: details.diameterInMillimeters,
       thicknessInMillimeters: details.thicknessInMillimeters,
       numistaId: details.numistaId,
-      denomination: details.denomination
+      denomination: details.denomination,
+      shape: details.shape || CoinShape.CIRCULAR
     });
 
     // Set year to max year if available
