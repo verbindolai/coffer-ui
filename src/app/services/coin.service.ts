@@ -9,7 +9,7 @@ import {
   PageResponse,
   CoinSearchParams
 } from '../models';
-import { CoinValuationResponse, Timeframe } from '../models';
+import { CoinValuationResponse, CurrentPricesResponse, Timeframe } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -73,5 +73,9 @@ export class CoinService {
   getCoinValuation(coinId: string, timeframe: Timeframe = '1d'): Observable<CoinValuationResponse> {
     const params = new HttpParams().set('timeframe', timeframe);
     return this.http.get<CoinValuationResponse>(`${this.baseUrl}/${coinId}/valuation`, { params });
+  }
+
+  getCurrentPrices(coinId: string): Observable<CurrentPricesResponse> {
+    return this.http.get<CurrentPricesResponse>(`${this.baseUrl}/${coinId}/current-prices`);
   }
 }

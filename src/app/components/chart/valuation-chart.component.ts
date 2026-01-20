@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewInit, signal, computed, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { createChart, IChartApi, ISeriesApi, ColorType, CrosshairMode, LineStyle, LineSeries, AreaSeries, Time } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, ColorType, CrosshairMode, LineStyle, LineSeries, Time } from 'lightweight-charts';
 import {
   Timeframe,
   TIMEFRAMES,
@@ -116,23 +116,23 @@ interface LineDataPoint {
       <div class="flex flex-wrap gap-5 mb-4 p-3 bg-bg-tertiary border border-border-subtle rounded-lg">
         @if (showMetalValue()) {
           <div class="flex items-center gap-2.5">
-            <span class="w-6 h-0.5 rounded bg-accent-gold shadow-gold-glow"></span>
+            <span class="w-6 h-0.5 rounded bg-accent-emerald shadow-emerald-glow"></span>
             <span class="text-xs font-medium text-text-secondary">Metal Value</span>
           </div>
         }
         @if (showCollectorValue() && viewMode() === 'range') {
           <div class="flex items-center gap-2.5">
-            <span class="w-6 h-0.5 rounded bg-accent-emerald"></span>
+            <span class="w-6 h-0.5 rounded bg-accent-gold"></span>
             <span class="text-xs font-medium text-text-secondary">Collector Max</span>
           </div>
           <div class="flex items-center gap-2.5">
-            <span class="w-6 h-0.5 rounded bg-accent-teal"></span>
+            <span class="w-6 h-0.5 rounded bg-amber-600"></span>
             <span class="text-xs font-medium text-text-secondary">Collector Min</span>
           </div>
         }
         @if (showCollectorValue() && viewMode() === 'exact') {
           <div class="flex items-center gap-2.5">
-            <span class="w-6 h-0.5 rounded bg-accent-cyan shadow-cyan-glow"></span>
+            <span class="w-6 h-0.5 rounded bg-accent-gold shadow-gold-glow"></span>
             <span class="text-xs font-medium text-text-secondary">Collector Exact</span>
           </div>
         }
@@ -178,7 +178,10 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('chartContainer', { static: false }) chartContainer!: ElementRef<HTMLDivElement>;
 
   @Input() title = 'Valuation';
-  @Input() data: ValuationData | null = null;
+  @Input() set data(value: ValuationData | null) {
+    this._data.set(value);
+  }
+  private _data = signal<ValuationData | null>(null);
   @Input() loading = signal(false);
   @Input() selectedTimeframe = signal<Timeframe>('1d');
   @Output() selectedTimeframeChange = new EventEmitter<Timeframe>();
@@ -199,13 +202,13 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
   private chart: IChartApi | null = null;
   private metalSeries: ISeriesApi<'Line'> | null = null;
   private exactSeries: ISeriesApi<'Line'> | null = null;
-  private minSeries: ISeriesApi<'Area'> | null = null;
-  private maxSeries: ISeriesApi<'Area'> | null = null;
+  private minSeries: ISeriesApi<'Line'> | null = null;
+  private maxSeries: ISeriesApi<'Line'> | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
   // Computed values
   hasData = computed(() => {
-    if (!this.data) return false;
+    if (!this._data()) return false;
     const metalPoints = this.getMetalDataPoints();
     const collectorPoints = this.getCollectorDataPoints();
     return metalPoints.length > 0 || collectorPoints.length > 0;
@@ -343,10 +346,10 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
       handleScroll: { vertTouchDrag: false }
     });
 
-    // Metal Value Series (Gold)
-    this.metalSeries = this.chart.addSeries(LineSeries, {
+    // Collector Max Series (Gold/Orange) - line only, no fill
+    this.maxSeries = this.chart.addSeries(LineSeries, {
       color: '#F7931A',
-      lineWidth: 2,
+      lineWidth: 1,
       priceLineVisible: false,
       lastValueVisible: true,
       crosshairMarkerVisible: true,
@@ -355,36 +358,35 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
       crosshairMarkerBackgroundColor: '#0f0f14'
     });
 
-    // Collector Exact Series (Cyan)
+    // Collector Min Series (Gold/Orange line only, no fill)
+    this.minSeries = this.chart.addSeries(LineSeries, {
+      color: '#D97706',
+      lineWidth: 1,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      crosshairMarkerVisible: true,
+      crosshairMarkerRadius: 5,
+      crosshairMarkerBorderColor: '#D97706',
+      crosshairMarkerBackgroundColor: '#0f0f14'
+    });
+
+    // Collector Exact Series (Gold) - drawn on top of range
     this.exactSeries = this.chart.addSeries(LineSeries, {
-      color: '#00D9FF',
+      color: '#F7931A',
       lineWidth: 2,
       priceLineVisible: false,
       lastValueVisible: true,
       crosshairMarkerVisible: true,
       crosshairMarkerRadius: 5,
-      crosshairMarkerBorderColor: '#00D9FF',
+      crosshairMarkerBorderColor: '#F7931A',
       crosshairMarkerBackgroundColor: '#0f0f14',
       visible: false
     });
 
-    // Collector Min Series (Teal) - bottom of range
-    this.minSeries = this.chart.addSeries(AreaSeries, {
-      lineColor: '#14B8A6',
-      lineWidth: 1,
-      topColor: 'rgba(20, 184, 166, 0)',
-      bottomColor: 'rgba(20, 184, 166, 0)',
-      priceLineVisible: false,
-      lastValueVisible: false,
-      crosshairMarkerVisible: false
-    });
-
-    // Collector Max Series (Emerald) - top of range with fill
-    this.maxSeries = this.chart.addSeries(AreaSeries, {
-      lineColor: '#10B981',
-      lineWidth: 1,
-      topColor: 'rgba(16, 185, 129, 0.2)',
-      bottomColor: 'rgba(20, 184, 166, 0.05)',
+    // Metal Value Series (Green/Teal) - added last so it's drawn on top
+    this.metalSeries = this.chart.addSeries(LineSeries, {
+      color: '#10B981',
+      lineWidth: 2,
       priceLineVisible: false,
       lastValueVisible: true,
       crosshairMarkerVisible: true,
@@ -406,7 +408,7 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private updateChartData(): void {
-    if (!this.chart || !this.data) return;
+    if (!this.chart || !this._data()) return;
 
     this.currency = this.getCurrency();
 
@@ -499,23 +501,25 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private getMetalDataPoints(): any[] {
-    if (!this.data) return [];
+    const data = this._data();
+    if (!data) return [];
 
-    if ('coinId' in this.data) {
-      return this.data.metalValuation?.dataPoints ?? [];
+    if ('coinId' in data) {
+      return data.metalValuation?.dataPoints ?? [];
     }
 
-    return this.data.metalValuation?.dataPoints ?? [];
+    return data.metalValuation?.dataPoints ?? [];
   }
 
   private getCollectorDataPoints(): any[] {
-    if (!this.data) return [];
+    const data = this._data();
+    if (!data) return [];
 
-    if ('coinId' in this.data) {
-      return this.data.issueValuation?.dataPoints ?? [];
+    if ('coinId' in data) {
+      return data.issueValuation?.dataPoints ?? [];
     }
 
-    const points = this.data.collectorValuation?.dataPoints ?? [];
+    const points = data.collectorValuation?.dataPoints ?? [];
     return points.map(p => ({
       timestamp: p.timestamp,
       price: p.exactValue,
@@ -525,12 +529,13 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private getCurrency(): string {
-    if (!this.data) return 'USD';
+    const data = this._data();
+    if (!data) return 'USD';
 
-    if ('coinId' in this.data) {
-      return this.data.metalValuation?.currency ?? this.data.issueValuation?.currency ?? 'USD';
+    if ('coinId' in data) {
+      return data.metalValuation?.currency ?? data.issueValuation?.currency ?? 'USD';
     }
 
-    return this.data.currency ?? 'USD';
+    return data.currency ?? 'USD';
   }
 }

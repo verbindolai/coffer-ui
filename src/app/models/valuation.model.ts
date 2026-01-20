@@ -91,3 +91,32 @@ export interface ChartRangeDataPoint {
   max?: number;
 }
 
+// Current Prices
+export interface CurrentPricesResponse {
+  coinId: string;
+  currency: string;
+  metalValue: MetalValue | null;
+  collectorPrices: CollectorPrices | null;
+}
+
+export interface MetalValue {
+  metalType: string;
+  pureMetalMassInGrams: number;
+  pricePerGram: number;
+  totalValue: number;
+  timestamp: string;
+}
+
+export interface CollectorPrices {
+  coinGrade: string | null;
+  hasExactMatch: boolean;
+  gradePrices: GradePrice[];
+  timestamp: string | null;
+}
+
+export interface GradePrice {
+  grade: string;
+  minPrice: number;
+  maxPrice: number;
+}
+

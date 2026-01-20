@@ -13,7 +13,7 @@ import {
   COIN_TYPE_LABELS,
   METAL_TYPE_LABELS
 } from '../../models/coin.model';
-import { CoinValuationResponse } from '../../models/valuation.model';
+import { CurrentPricesResponse } from '../../models/valuation.model';
 import { formatCurrency as formatCurrencyUtil, formatPurity, getRarityTier, getRarityColor } from '../../utils/format.utils';
 import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.component';
 
@@ -201,14 +201,14 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
                 <div class="mt-3 pt-3 border-t border-border-subtle flex gap-4 text-xs">
                   @if (getCoinPrice(coin.id).metal) {
                     <div class="flex items-center gap-1.5">
-                      <div class="w-1 h-3 bg-accent-gold rounded-full"></div>
+                      <div class="w-1 h-3 bg-accent-emerald rounded-full"></div>
                       <span class="text-text-muted">Metal:</span>
                       <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(coin.id).metal!) }}</span>
                     </div>
                   }
                   @if (getCoinPrice(coin.id).collector) {
                     <div class="flex items-center gap-1.5">
-                      <div class="w-1 h-3 bg-accent-teal rounded-full"></div>
+                      <div class="w-1 h-3 bg-accent-gold rounded-full"></div>
                       <span class="text-text-muted">Collector:</span>
                       <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(coin.id).collector!) }}</span>
                     </div>
@@ -257,7 +257,7 @@ export class CoinListComponent implements OnInit {
 
   // State
   coins = signal<CoinResponse[]>([]);
-  coinValuations = signal<Record<string, CoinValuationResponse>>({});
+  coinPrices = signal<Record<string, CurrentPricesResponse>>({});
   loading = signal(true);
   totalElements = signal(0);
   totalPages = signal(0);
@@ -313,7 +313,7 @@ export class CoinListComponent implements OnInit {
         this.totalElements.set(response.totalElements);
         this.totalPages.set(response.totalPages);
         this.loading.set(false);
-        this.loadCoinValuations(response.content);
+        this.loadCoinPrices(response.content);
       },
       error: (err) => {
         console.error('Error loading coins:', err);
@@ -322,40 +322,43 @@ export class CoinListComponent implements OnInit {
     });
   }
 
-  loadCoinValuations(coins: CoinResponse[]): void {
+  loadCoinPrices(coins: CoinResponse[]): void {
     coins.forEach(coin => {
-      // Use 1h timeframe to get current prices
-      this.coinService.getCoinValuation(coin.id, '1h').subscribe({
-        next: (valuation) => {
-          this.coinValuations.update(current => ({
+      this.coinService.getCurrentPrices(coin.id).subscribe({
+        next: (prices) => {
+          this.coinPrices.update(current => ({
             ...current,
-            [coin.id]: valuation
+            [coin.id]: prices
           }));
         },
         error: () => {
-          // Silently fail for valuation loading
+          // Silently fail for price loading
         }
       });
     });
   }
 
   getCoinPrice(coinId: string): { metal: number | null; collector: number | null } {
-    const valuation = this.coinValuations()[coinId];
-    if (!valuation) return { metal: null, collector: null };
+    const prices = this.coinPrices()[coinId];
+    if (!prices) return { metal: null, collector: null };
 
-    // Get latest metal value
-    const metalPoints = valuation.metalValuation?.dataPoints;
-    const metalValue = metalPoints?.length ? metalPoints[metalPoints.length - 1].totalValue : null;
+    // Get metal value
+    const metalValue = prices.metalValue?.totalValue ?? null;
 
-    // Get latest collector value (prefer exact price, otherwise use min/max average)
-    const collectorPoints = valuation.issueValuation?.dataPoints;
+    // Get collector value for the coin's grade
     let collectorValue: number | null = null;
-    if (collectorPoints?.length) {
-      const latest = collectorPoints[collectorPoints.length - 1];
-      if (latest.price !== null) {
-        collectorValue = latest.price;
-      } else if (latest.minPrice !== null && latest.maxPrice !== null) {
-        collectorValue = (latest.minPrice + latest.maxPrice) / 2;
+    const collectorPrices = prices.collectorPrices;
+    if (collectorPrices?.gradePrices?.length) {
+      // Find the price for the coin's grade, or use the first available
+      const coinGrade = collectorPrices.coinGrade;
+      const gradePrice = coinGrade
+        ? collectorPrices.gradePrices.find(gp => gp.grade === coinGrade)
+        : collectorPrices.gradePrices[0];
+
+      if (gradePrice) {
+        collectorValue = gradePrice.minPrice === gradePrice.maxPrice
+          ? gradePrice.minPrice
+          : (gradePrice.minPrice + gradePrice.maxPrice) / 2;
       }
     }
 

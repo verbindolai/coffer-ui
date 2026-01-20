@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CoinService } from '../../services/coin.service';
 import { CoinResponse, CoinGrade, COIN_GRADE_LABELS, COIN_TYPE_LABELS, METAL_TYPE_LABELS, COIN_SHAPE_LABELS, MetalType } from '../../models/coin.model';
-import { CoinValuationResponse, Timeframe } from '../../models/valuation.model';
+import { CoinValuationResponse, CurrentPricesResponse, Timeframe } from '../../models/valuation.model';
 import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.component';
 import { ValuationChartComponent } from '../chart/valuation-chart.component';
 import { formatCurrency, formatPurity, formatWeight, formatDimension, formatDate, getRarityTier, getRarityColor } from '../../utils/format.utils';
@@ -167,9 +167,9 @@ import { formatCurrency, formatPurity, formatWeight, formatDimension, formatDate
                   <div class="space-y-4">
                     <!-- Metal Value -->
                     @if (getCurrentMetalValue(); as metalValue) {
-                      <div class="p-4 bg-bg-tertiary rounded-lg border border-accent-gold/20">
+                      <div class="p-4 bg-bg-tertiary rounded-lg border border-accent-emerald/20">
                         <div class="flex items-center gap-2 mb-2">
-                          <div class="w-1 h-6 bg-accent-gold rounded-full"></div>
+                          <div class="w-1 h-6 bg-accent-emerald rounded-full"></div>
                           <span class="text-xs font-medium text-text-muted uppercase tracking-wider">Metal Value</span>
                         </div>
                         <p class="text-2xl font-semibold text-text-primary font-mono">
@@ -178,36 +178,46 @@ import { formatCurrency, formatPurity, formatWeight, formatDimension, formatDate
                       </div>
                     }
 
-                    <!-- Collector Price -->
-                    @if (getCurrentCollectorPrice().price !== null || getCurrentCollectorPrice().min !== null) {
-                      <div [class]="getCurrentCollectorPrice().exactMatch ? 'p-4 bg-accent/10 rounded-lg border border-accent/30' : 'p-4 bg-bg-tertiary rounded-lg border border-accent-teal/20'">
-                        <div class="flex items-center gap-2 mb-2">
-                          <div class="w-1 h-6 bg-accent-teal rounded-full"></div>
-                          <span class="text-xs font-medium text-text-muted uppercase tracking-wider">
-                            Collector Value
-                            @if (getCurrentCollectorPrice().exactMatch) {
-                              <span class="text-accent ml-1">({{ getGradeDisplay(coin()!.grade!) }})</span>
-                            }
-                          </span>
+                    <!-- Collector Prices by Grade -->
+                    @if (getCollectorPrices(); as collectorPrices) {
+                      <div class="p-4 bg-bg-tertiary rounded-lg border border-accent-gold/20">
+                        <div class="flex items-center gap-2 mb-3">
+                          <div class="w-1 h-6 bg-accent-gold rounded-full"></div>
+                          <span class="text-xs font-medium text-text-muted uppercase tracking-wider">Collector Values by Grade</span>
                         </div>
-                        @if (getCurrentCollectorPrice().price !== null) {
-                          <p class="text-2xl font-semibold text-text-primary font-mono">
-                            {{ formatCurrency(getCurrentCollectorPrice().price!) }}
-                          </p>
-                        }
-                        @if (hasCollectorRange()) {
-                          <p class="text-sm text-text-secondary mt-1">
-                            Range: {{ formatCurrency(getCurrentCollectorPrice().min!) }} - {{ formatCurrency(getCurrentCollectorPrice().max!) }}
-                          </p>
-                        } @else if (getCurrentCollectorPrice().min !== null && getCurrentCollectorPrice().price === null) {
-                          <p class="text-2xl font-semibold text-text-primary font-mono">
-                            {{ formatCurrency(getCurrentCollectorPrice().min!) }} - {{ formatCurrency(getCurrentCollectorPrice().max!) }}
-                          </p>
-                        }
+                        <div class="grid grid-cols-2 gap-2">
+                          @for (gradePrice of collectorPrices.gradePrices; track gradePrice.grade) {
+                            <div
+                              [class]="gradePrice.grade === collectorPrices.coinGrade
+                                ? 'p-3 bg-accent-gold/5 rounded-lg border border-accent-gold/20'
+                                : 'p-3 bg-bg-secondary rounded-lg border border-border-subtle'"
+                            >
+                              <p class="text-xs text-text-muted mb-1">
+                                {{ getGradeDisplay(gradePrice.grade) }}
+                                @if (gradePrice.grade === collectorPrices.coinGrade) {
+                                  <span class="text-accent-gold font-medium ml-1">★</span>
+                                }
+                              </p>
+                              @if (gradePrice.minPrice === gradePrice.maxPrice) {
+                                <p [class]="gradePrice.grade === collectorPrices.coinGrade
+                                  ? 'text-lg font-semibold text-accent-gold font-mono'
+                                  : 'text-lg font-semibold text-text-primary font-mono'">
+                                  {{ formatCurrency(gradePrice.minPrice) }}
+                                </p>
+                              } @else {
+                                <p [class]="gradePrice.grade === collectorPrices.coinGrade
+                                  ? 'text-base font-semibold text-accent-gold font-mono'
+                                  : 'text-base font-semibold text-text-primary font-mono'">
+                                  {{ formatCurrency(gradePrice.minPrice) }} - {{ formatCurrency(gradePrice.maxPrice) }}
+                                </p>
+                              }
+                            </div>
+                          }
+                        </div>
                       </div>
                     }
 
-                    @if (getCurrentMetalValue() === null && getCurrentCollectorPrice().price === null && getCurrentCollectorPrice().min === null) {
+                    @if (getCurrentMetalValue() === null && !getCollectorPrices()) {
                       <p class="text-text-muted text-sm text-center py-4">
                         No price data available yet
                       </p>
@@ -218,15 +228,17 @@ import { formatCurrency, formatPurity, formatWeight, formatDimension, formatDate
             }
           </div>
         </div>
+        <div class="Alsmt-8">
+          <!-- Valuation Chart -->
+          <app-valuation-chart
+            title="Coin Valuation"
+            [data]="valuationData()"
+            [loading]="valuationLoading"
+            [selectedTimeframe]="selectedTimeframe"
+            (selectedTimeframeChange)="onTimeframeChange($event)"
+          />
+        </div>
 
-        <!-- Valuation Chart -->
-        <app-valuation-chart
-          title="Coin Valuation"
-          [data]="valuationData()"
-          [loading]="valuationLoading"
-          [selectedTimeframe]="selectedTimeframe"
-          (selectedTimeframeChange)="onTimeframeChange($event)"
-        />
       } @else {
         <div class="empty-state">
           <h3 class="text-lg font-medium text-text-primary mb-2">Coin not found</h3>
@@ -248,7 +260,7 @@ export class CoinDetailsComponent implements OnInit {
   valuationData = signal<CoinValuationResponse | null>(null);
   valuationLoading = signal(false);
   selectedTimeframe = signal<Timeframe>('1d');
-  currentPricesData = signal<CoinValuationResponse | null>(null);
+  currentPricesData = signal<CurrentPricesResponse | null>(null);
   currentPricesLoading = signal(false);
 
   // Labels
@@ -306,8 +318,7 @@ export class CoinDetailsComponent implements OnInit {
 
   loadCurrentPrices(id: string): void {
     this.currentPricesLoading.set(true);
-    // Use 1h timeframe to get the most current prices
-    this.coinService.getCoinValuation(id, '1h').subscribe({
+    this.coinService.getCurrentPrices(id).subscribe({
       next: (data) => {
         this.currentPricesData.set(data);
         this.currentPricesLoading.set(false);
@@ -321,29 +332,11 @@ export class CoinDetailsComponent implements OnInit {
 
   getCurrentMetalValue(): number | null {
     const data = this.currentPricesData();
-    if (!data?.metalValuation?.dataPoints?.length) return null;
-    const points = data.metalValuation.dataPoints;
-    return points[points.length - 1].totalValue;
+    return data?.metalValue?.totalValue ?? null;
   }
 
-  getCurrentCollectorPrice(): { price: number | null; min: number | null; max: number | null; exactMatch: boolean } {
-    const data = this.currentPricesData();
-    if (!data?.issueValuation?.dataPoints?.length) {
-      return { price: null, min: null, max: null, exactMatch: false };
-    }
-    const points = data.issueValuation.dataPoints;
-    const latest = points[points.length - 1];
-    return {
-      price: latest.price,
-      min: latest.minPrice,
-      max: latest.maxPrice,
-      exactMatch: data.issueValuation.exactMatch
-    };
-  }
-
-  hasCollectorRange(): boolean {
-    const collector = this.getCurrentCollectorPrice();
-    return collector.min !== null && collector.max !== null && collector.min !== collector.max;
+  getCollectorPrices(): CurrentPricesResponse['collectorPrices'] {
+    return this.currentPricesData()?.collectorPrices ?? null;
   }
 
   getGradeDisplay(grade: string): string {

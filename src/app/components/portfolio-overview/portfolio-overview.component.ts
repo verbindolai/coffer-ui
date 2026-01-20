@@ -93,6 +93,7 @@ import { formatCurrency, formatWeight } from '../../utils/format.utils';
         </div>
       } @else {
         <!-- Valuation Chart -->
+        <div class="mt-8">
         <app-valuation-chart
           title="Portfolio Value"
           [data]="valuationData()"
@@ -100,6 +101,8 @@ import { formatCurrency, formatWeight } from '../../utils/format.utils';
           [selectedTimeframe]="selectedTimeframe"
           (selectedTimeframeChange)="onTimeframeChange($event)"
         />
+        </div>
+
 
         <!-- Empty State -->
         @if (!hasData()) {

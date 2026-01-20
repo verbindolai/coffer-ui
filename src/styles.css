@@ -109,11 +109,11 @@
   }
 
   .stat-indicator-metal {
-    background: linear-gradient(180deg, #F7931A 0%, rgba(247, 147, 26, 0.2) 100%);
+    background: linear-gradient(180deg, #10B981 0%, rgba(16, 185, 129, 0.2) 100%);
   }
 
   .stat-indicator-collector {
-    background: linear-gradient(180deg, #10B981 0%, rgba(20, 184, 166, 0.2) 100%);
+    background: linear-gradient(180deg, #F7931A 0%, rgba(247, 147, 26, 0.2) 100%);
   }
 
   /* Loading spinner */
