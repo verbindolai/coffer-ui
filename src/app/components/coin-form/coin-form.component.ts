@@ -77,6 +77,7 @@ import { CatalogCoinDetails } from '../../models/catalog.model';
                     <input
                       type="text"
                       [(ngModel)]="directNumistaId"
+                      [ngModelOptions]="{standalone: true}"
                       class="input flex-1"
                       placeholder="Enter Numista ID (e.g., 12345)"
                       (keyup.enter)="fetchByNumistaId()"

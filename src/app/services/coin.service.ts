@@ -8,8 +8,8 @@ import {
   CoinImageResponse,
   PageResponse,
   CoinSearchParams
-} from '../models/coin.model';
-import { CoinValuationResponse, Timeframe } from '../models/valuation.model';
+} from '../models';
+import { CoinValuationResponse, Timeframe } from '../models';
 
 @Injectable({
   providedIn: 'root'

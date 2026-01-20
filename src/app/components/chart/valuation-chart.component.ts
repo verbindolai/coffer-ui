@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewInit, signal, computed, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { createChart, IChartApi, ISeriesApi, ColorType, CrosshairMode, LineStyle, LineSeries, LineSeriesOptions, Time } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, ColorType, CrosshairMode, LineStyle, LineSeries, AreaSeries, Time } from 'lightweight-charts';
 import {
   Timeframe,
   TIMEFRAMES,
@@ -199,8 +199,8 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
   private chart: IChartApi | null = null;
   private metalSeries: ISeriesApi<'Line'> | null = null;
   private exactSeries: ISeriesApi<'Line'> | null = null;
-  private minSeries: ISeriesApi<'Line'> | null = null;
-  private maxSeries: ISeriesApi<'Line'> | null = null;
+  private minSeries: ISeriesApi<'Area'> | null = null;
+  private maxSeries: ISeriesApi<'Area'> | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
   // Computed values
@@ -368,21 +368,23 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
       visible: false
     });
 
-    // Collector Min Series (Teal)
-    this.minSeries = this.chart.addSeries(LineSeries, {
-      color: '#14B8A6',
+    // Collector Min Series (Teal) - bottom of range
+    this.minSeries = this.chart.addSeries(AreaSeries, {
+      lineColor: '#14B8A6',
       lineWidth: 1,
-      lineStyle: LineStyle.Solid,
+      topColor: 'rgba(20, 184, 166, 0)',
+      bottomColor: 'rgba(20, 184, 166, 0)',
       priceLineVisible: false,
       lastValueVisible: false,
       crosshairMarkerVisible: false
     });
 
-    // Collector Max Series (Emerald)
-    this.maxSeries = this.chart.addSeries(LineSeries, {
-      color: '#10B981',
+    // Collector Max Series (Emerald) - top of range with fill
+    this.maxSeries = this.chart.addSeries(AreaSeries, {
+      lineColor: '#10B981',
       lineWidth: 1,
-      lineStyle: LineStyle.Solid,
+      topColor: 'rgba(16, 185, 129, 0.2)',
+      bottomColor: 'rgba(20, 184, 166, 0.05)',
       priceLineVisible: false,
       lastValueVisible: true,
       crosshairMarkerVisible: true,
@@ -409,34 +411,76 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
     this.currency = this.getCurrency();
 
     const metalPoints = this.getMetalDataPoints();
-    const metalData: LineDataPoint[] = metalPoints.map(p => ({
+    let metalData: LineDataPoint[] = metalPoints.map(p => ({
       time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
       value: p.totalValue
     }));
+
+    // Handle single data point by duplicating with offset for visibility
+    if (metalData.length === 1) {
+      const point = metalData[0];
+      const offset = 3600; // 1 hour offset
+      metalData = [
+        { time: ((point.time as number) - offset) as Time, value: point.value },
+        point,
+        { time: ((point.time as number) + offset) as Time, value: point.value }
+      ];
+    }
     this.metalSeries?.setData(metalData);
 
     const collectorPoints = this.getCollectorDataPoints();
 
-    const exactData: LineDataPoint[] = collectorPoints
+    let exactData: LineDataPoint[] = collectorPoints
       .filter(p => p.price !== null)
       .map(p => ({
         time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
         value: p.price!
       }));
 
-    const minData: LineDataPoint[] = collectorPoints
+    // Handle single data point
+    if (exactData.length === 1) {
+      const point = exactData[0];
+      const offset = 3600;
+      exactData = [
+        { time: ((point.time as number) - offset) as Time, value: point.value },
+        point,
+        { time: ((point.time as number) + offset) as Time, value: point.value }
+      ];
+    }
+
+    let minData: LineDataPoint[] = collectorPoints
       .filter(p => p.minPrice !== null)
       .map(p => ({
         time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
         value: p.minPrice!
       }));
 
-    const maxData: LineDataPoint[] = collectorPoints
+    let maxData: LineDataPoint[] = collectorPoints
       .filter(p => p.maxPrice !== null)
       .map(p => ({
         time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
         value: p.maxPrice!
       }));
+
+    // Handle single data point for min/max
+    if (minData.length === 1) {
+      const point = minData[0];
+      const offset = 3600;
+      minData = [
+        { time: ((point.time as number) - offset) as Time, value: point.value },
+        point,
+        { time: ((point.time as number) + offset) as Time, value: point.value }
+      ];
+    }
+    if (maxData.length === 1) {
+      const point = maxData[0];
+      const offset = 3600;
+      maxData = [
+        { time: ((point.time as number) - offset) as Time, value: point.value },
+        point,
+        { time: ((point.time as number) + offset) as Time, value: point.value }
+      ];
+    }
 
     this.exactSeries?.setData(exactData);
     this.minSeries?.setData(minData);

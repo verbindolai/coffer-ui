@@ -13,7 +13,8 @@ import {
   COIN_TYPE_LABELS,
   METAL_TYPE_LABELS
 } from '../../models/coin.model';
-import { formatCurrency, formatPurity, getRarityTier, getRarityColor } from '../../utils/format.utils';
+import { CoinValuationResponse } from '../../models/valuation.model';
+import { formatCurrency as formatCurrencyUtil, formatPurity, getRarityTier, getRarityColor } from '../../utils/format.utils';
 import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.component';
 
 @Component({
@@ -194,6 +195,26 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
                   </div>
                 </div>
               </div>
+
+              <!-- Prices -->
+              @if (getCoinPrice(coin.id).metal || getCoinPrice(coin.id).collector) {
+                <div class="mt-3 pt-3 border-t border-border-subtle flex gap-4 text-xs">
+                  @if (getCoinPrice(coin.id).metal) {
+                    <div class="flex items-center gap-1.5">
+                      <div class="w-1 h-3 bg-accent-gold rounded-full"></div>
+                      <span class="text-text-muted">Metal:</span>
+                      <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(coin.id).metal!) }}</span>
+                    </div>
+                  }
+                  @if (getCoinPrice(coin.id).collector) {
+                    <div class="flex items-center gap-1.5">
+                      <div class="w-1 h-3 bg-accent-teal rounded-full"></div>
+                      <span class="text-text-muted">Collector:</span>
+                      <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(coin.id).collector!) }}</span>
+                    </div>
+                  }
+                </div>
+              }
             </a>
           }
         </div>
@@ -236,6 +257,7 @@ export class CoinListComponent implements OnInit {
 
   // State
   coins = signal<CoinResponse[]>([]);
+  coinValuations = signal<Record<string, CoinValuationResponse>>({});
   loading = signal(true);
   totalElements = signal(0);
   totalPages = signal(0);
@@ -260,6 +282,7 @@ export class CoinListComponent implements OnInit {
   // Utility functions
   formatPurity = formatPurity;
   getRarityTier = getRarityTier;
+  formatPrice = formatCurrencyUtil;
   getRarityColor = getRarityColor;
   Math = Math;
 
@@ -290,12 +313,56 @@ export class CoinListComponent implements OnInit {
         this.totalElements.set(response.totalElements);
         this.totalPages.set(response.totalPages);
         this.loading.set(false);
+        this.loadCoinValuations(response.content);
       },
       error: (err) => {
         console.error('Error loading coins:', err);
         this.loading.set(false);
       }
     });
+  }
+
+  loadCoinValuations(coins: CoinResponse[]): void {
+    coins.forEach(coin => {
+      // Use 1h timeframe to get current prices
+      this.coinService.getCoinValuation(coin.id, '1h').subscribe({
+        next: (valuation) => {
+          this.coinValuations.update(current => ({
+            ...current,
+            [coin.id]: valuation
+          }));
+        },
+        error: () => {
+          // Silently fail for valuation loading
+        }
+      });
+    });
+  }
+
+  getCoinPrice(coinId: string): { metal: number | null; collector: number | null } {
+    const valuation = this.coinValuations()[coinId];
+    if (!valuation) return { metal: null, collector: null };
+
+    // Get latest metal value
+    const metalPoints = valuation.metalValuation?.dataPoints;
+    const metalValue = metalPoints?.length ? metalPoints[metalPoints.length - 1].totalValue : null;
+
+    // Get latest collector value (prefer exact price, otherwise use min/max average)
+    const collectorPoints = valuation.issueValuation?.dataPoints;
+    let collectorValue: number | null = null;
+    if (collectorPoints?.length) {
+      const latest = collectorPoints[collectorPoints.length - 1];
+      if (latest.price !== null) {
+        collectorValue = latest.price;
+      } else if (latest.minPrice !== null && latest.maxPrice !== null) {
+        collectorValue = (latest.minPrice + latest.maxPrice) / 2;
+      }
+    }
+
+    return {
+      metal: metalValue,
+      collector: collectorValue
+    };
   }
 
   onFilterChange(): void {

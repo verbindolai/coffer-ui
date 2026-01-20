@@ -90,3 +90,4 @@ export interface ChartRangeDataPoint {
   min?: number;
   max?: number;
 }
+
