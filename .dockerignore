@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.angular/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.local
+*.env
+
+# Documentation
+*.md
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Tests
+coverage/
+*.spec.ts
+karma.conf.js
+
+# Development configs
+proxy.conf.json
