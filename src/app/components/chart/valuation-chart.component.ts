@@ -418,74 +418,46 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
       value: p.totalValue
     }));
 
-    // Handle single data point by duplicating with offset for visibility
-    if (metalData.length === 1) {
-      const point = metalData[0];
-      const offset = 3600; // 1 hour offset
-      metalData = [
-        { time: ((point.time as number) - offset) as Time, value: point.value },
-        point,
-        { time: ((point.time as number) + offset) as Time, value: point.value }
-      ];
-    }
-    this.metalSeries?.setData(metalData);
+    // For single metal data point, show only a dot
+    const metalSingle = metalData.length === 1;
+    this.metalSeries?.applyOptions({ pointMarkersVisible: metalSingle, lineVisible: !metalSingle });
 
     const collectorPoints = this.getCollectorDataPoints();
 
-    let exactData: LineDataPoint[] = collectorPoints
+    const exactData: LineDataPoint[] = collectorPoints
       .filter(p => p.price !== null)
       .map(p => ({
         time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
         value: p.price!
       }));
 
-    // Handle single data point
-    if (exactData.length === 1) {
-      const point = exactData[0];
-      const offset = 3600;
-      exactData = [
-        { time: ((point.time as number) - offset) as Time, value: point.value },
-        point,
-        { time: ((point.time as number) + offset) as Time, value: point.value }
-      ];
-    }
-
-    let minData: LineDataPoint[] = collectorPoints
+    const minData: LineDataPoint[] = collectorPoints
       .filter(p => p.minPrice !== null)
       .map(p => ({
         time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
         value: p.minPrice!
       }));
 
-    let maxData: LineDataPoint[] = collectorPoints
+    const maxData: LineDataPoint[] = collectorPoints
       .filter(p => p.maxPrice !== null)
       .map(p => ({
         time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
         value: p.maxPrice!
       }));
 
-    // Handle single data point for min/max
-    if (minData.length === 1) {
-      const point = minData[0];
-      const offset = 3600;
-      minData = [
-        { time: ((point.time as number) - offset) as Time, value: point.value },
-        point,
-        { time: ((point.time as number) + offset) as Time, value: point.value }
-      ];
-    }
-    if (maxData.length === 1) {
-      const point = maxData[0];
-      const offset = 3600;
-      maxData = [
-        { time: ((point.time as number) - offset) as Time, value: point.value },
-        point,
-        { time: ((point.time as number) + offset) as Time, value: point.value }
-      ];
-    }
+    this.metalSeries?.setData(metalData);
 
+    // For collector series, show only a dot when there's a single data point
+    const exactSingle = exactData.length === 1;
+    this.exactSeries?.applyOptions({ pointMarkersVisible: exactSingle, lineVisible: !exactSingle });
     this.exactSeries?.setData(exactData);
+
+    const minSingle = minData.length === 1;
+    this.minSeries?.applyOptions({ pointMarkersVisible: minSingle, lineVisible: !minSingle });
     this.minSeries?.setData(minData);
+
+    const maxSingle = maxData.length === 1;
+    this.maxSeries?.applyOptions({ pointMarkersVisible: maxSingle, lineVisible: !maxSingle });
     this.maxSeries?.setData(maxData);
 
     this.updateSeriesVisibility();
