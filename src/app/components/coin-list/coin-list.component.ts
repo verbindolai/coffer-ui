@@ -356,9 +356,7 @@ export class CoinListComponent implements OnInit {
         : collectorPrices.gradePrices[0];
 
       if (gradePrice) {
-        collectorValue = gradePrice.minPrice === gradePrice.maxPrice
-          ? gradePrice.minPrice
-          : (gradePrice.minPrice + gradePrice.maxPrice) / 2;
+        collectorValue = gradePrice.minPrice;
       }
     }
 

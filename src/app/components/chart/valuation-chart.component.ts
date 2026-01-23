@@ -70,33 +70,6 @@ interface LineDataPoint {
 
         <!-- Controls -->
         <div class="flex flex-col gap-3 items-end">
-          <!-- View Mode Toggle -->
-          @if (showCollectorValue()) {
-            <div class="controls-group">
-              <button
-                (click)="setViewMode('range')"
-                [class.active]="viewMode() === 'range'"
-                class="control-btn"
-              >
-                <svg class="w-4 h-4 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 12h18M3 6h18M3 18h18"/>
-                </svg>
-                Range
-              </button>
-              <button
-                (click)="setViewMode('exact')"
-                [class.active]="viewMode() === 'exact'"
-                class="control-btn"
-              >
-                <svg class="w-4 h-4 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
-                </svg>
-                Exact
-              </button>
-            </div>
-          }
-
           <!-- Timeframe Selector -->
           <div class="controls-group">
             @for (tf of timeframes; track tf) {
@@ -120,20 +93,10 @@ interface LineDataPoint {
             <span class="text-xs font-medium text-text-secondary">Metal Value</span>
           </div>
         }
-        @if (showCollectorValue() && viewMode() === 'range') {
-          <div class="flex items-center gap-2.5">
-            <span class="w-6 h-0.5 rounded bg-accent-gold"></span>
-            <span class="text-xs font-medium text-text-secondary">Collector Max</span>
-          </div>
-          <div class="flex items-center gap-2.5">
-            <span class="w-6 h-0.5 rounded bg-amber-600"></span>
-            <span class="text-xs font-medium text-text-secondary">Collector Min</span>
-          </div>
-        }
-        @if (showCollectorValue() && viewMode() === 'exact') {
+        @if (showCollectorValue()) {
           <div class="flex items-center gap-2.5">
             <span class="w-6 h-0.5 rounded bg-accent-gold shadow-gold-glow"></span>
-            <span class="text-xs font-medium text-text-secondary">Collector Exact</span>
+            <span class="text-xs font-medium text-text-secondary">Collector Value</span>
           </div>
         }
       </div>
@@ -187,7 +150,6 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
   @Output() selectedTimeframeChange = new EventEmitter<Timeframe>();
 
   // State
-  viewMode = signal<'range' | 'exact'>('range');
   currency = 'USD';
 
   // Options
@@ -201,9 +163,7 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
   // Chart
   private chart: IChartApi | null = null;
   private metalSeries: ISeriesApi<'Line'> | null = null;
-  private exactSeries: ISeriesApi<'Line'> | null = null;
-  private minSeries: ISeriesApi<'Line'> | null = null;
-  private maxSeries: ISeriesApi<'Line'> | null = null;
+  private collectorSeries: ISeriesApi<'Line'> | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
   // Computed values
@@ -232,12 +192,7 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
     const points = this.getCollectorDataPoints();
     if (points.length === 0) return 0;
     const last = points[points.length - 1];
-    if (this.viewMode() === 'exact' && last.price !== null) {
-      return last.price;
-    }
-    const min = last.minPrice ?? last.price ?? 0;
-    const max = last.maxPrice ?? last.price ?? 0;
-    return (min + max) / 2;
+    return last.minPrice ?? last.price ?? 0;
   });
 
   metalChange = computed(() => {
@@ -254,20 +209,15 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
     const first = points[0];
     const last = points[points.length - 1];
 
-    const firstValue = this.viewMode() === 'exact' && first.price !== null
-      ? first.price
-      : ((first.minPrice ?? 0) + (first.maxPrice ?? 0)) / 2;
-
-    const lastValue = this.viewMode() === 'exact' && last.price !== null
-      ? last.price
-      : ((last.minPrice ?? 0) + (last.maxPrice ?? 0)) / 2;
+    const firstValue = first.minPrice ?? first.price ?? 0;
+    const lastValue = last.minPrice ?? last.price ?? 0;
 
     if (firstValue === 0) return 0;
     return ((lastValue - firstValue) / firstValue) * 100;
   });
 
   collectorValueLabel = computed(() => {
-    return this.viewMode() === 'exact' ? 'Collector Value' : 'Collector Value (Avg)';
+    return 'Collector Value';
   });
 
   ngOnInit(): void {}
@@ -294,11 +244,6 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
   onTimeframeClick(timeframe: Timeframe): void {
     this.selectedTimeframe.set(timeframe);
     this.selectedTimeframeChange.emit(timeframe);
-  }
-
-  setViewMode(mode: 'range' | 'exact'): void {
-    this.viewMode.set(mode);
-    this.updateSeriesVisibility();
   }
 
   private initChart(): void {
@@ -346,32 +291,8 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
       handleScroll: { vertTouchDrag: false }
     });
 
-    // Collector Max Series (Gold/Orange) - line only, no fill
-    this.maxSeries = this.chart.addSeries(LineSeries, {
-      color: '#F7931A',
-      lineWidth: 1,
-      priceLineVisible: false,
-      lastValueVisible: true,
-      crosshairMarkerVisible: true,
-      crosshairMarkerRadius: 5,
-      crosshairMarkerBorderColor: '#F7931A',
-      crosshairMarkerBackgroundColor: '#0f0f14'
-    });
-
-    // Collector Min Series (Gold/Orange line only, no fill)
-    this.minSeries = this.chart.addSeries(LineSeries, {
-      color: '#D97706',
-      lineWidth: 1,
-      priceLineVisible: false,
-      lastValueVisible: false,
-      crosshairMarkerVisible: true,
-      crosshairMarkerRadius: 5,
-      crosshairMarkerBorderColor: '#D97706',
-      crosshairMarkerBackgroundColor: '#0f0f14'
-    });
-
-    // Collector Exact Series (Gold) - drawn on top of range
-    this.exactSeries = this.chart.addSeries(LineSeries, {
+    // Collector Value Series (Gold)
+    this.collectorSeries = this.chart.addSeries(LineSeries, {
       color: '#F7931A',
       lineWidth: 2,
       priceLineVisible: false,
@@ -379,8 +300,7 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
       crosshairMarkerVisible: true,
       crosshairMarkerRadius: 5,
       crosshairMarkerBorderColor: '#F7931A',
-      crosshairMarkerBackgroundColor: '#0f0f14',
-      visible: false
+      crosshairMarkerBackgroundColor: '#0f0f14'
     });
 
     // Metal Value Series (Green/Teal) - added last so it's drawn on top
@@ -407,6 +327,13 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
     this.updateChartData();
   }
 
+  private toLocalTime(timestamp: string): Time {
+    const date = new Date(timestamp);
+    const utcSeconds = Math.floor(date.getTime() / 1000);
+    const offsetSeconds = date.getTimezoneOffset() * 60;
+    return (utcSeconds - offsetSeconds) as Time;
+  }
+
   private updateChartData(): void {
     if (!this.chart || !this._data()) return;
 
@@ -414,7 +341,7 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
 
     const metalPoints = this.getMetalDataPoints();
     let metalData: LineDataPoint[] = metalPoints.map(p => ({
-      time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
+      time: this.toLocalTime(p.timestamp),
       value: p.totalValue
     }));
 
@@ -424,52 +351,20 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
 
     const collectorPoints = this.getCollectorDataPoints();
 
-    const exactData: LineDataPoint[] = collectorPoints
-      .filter(p => p.price !== null)
+    const collectorData: LineDataPoint[] = collectorPoints
+      .filter(p => (p.minPrice ?? p.price) !== null)
       .map(p => ({
-        time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
-        value: p.price!
-      }));
-
-    const minData: LineDataPoint[] = collectorPoints
-      .filter(p => p.minPrice !== null)
-      .map(p => ({
-        time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
-        value: p.minPrice!
-      }));
-
-    const maxData: LineDataPoint[] = collectorPoints
-      .filter(p => p.maxPrice !== null)
-      .map(p => ({
-        time: Math.floor(new Date(p.timestamp).getTime() / 1000) as Time,
-        value: p.maxPrice!
+        time: this.toLocalTime(p.timestamp),
+        value: p.minPrice ?? p.price!
       }));
 
     this.metalSeries?.setData(metalData);
 
-    // For collector series, show only a dot when there's a single data point
-    const exactSingle = exactData.length === 1;
-    this.exactSeries?.applyOptions({ pointMarkersVisible: exactSingle, lineVisible: !exactSingle });
-    this.exactSeries?.setData(exactData);
+    const collectorSingle = collectorData.length === 1;
+    this.collectorSeries?.applyOptions({ pointMarkersVisible: collectorSingle, lineVisible: !collectorSingle });
+    this.collectorSeries?.setData(collectorData);
 
-    const minSingle = minData.length === 1;
-    this.minSeries?.applyOptions({ pointMarkersVisible: minSingle, lineVisible: !minSingle });
-    this.minSeries?.setData(minData);
-
-    const maxSingle = maxData.length === 1;
-    this.maxSeries?.applyOptions({ pointMarkersVisible: maxSingle, lineVisible: !maxSingle });
-    this.maxSeries?.setData(maxData);
-
-    this.updateSeriesVisibility();
     this.chart.timeScale().fitContent();
-  }
-
-  private updateSeriesVisibility(): void {
-    const showExact = this.viewMode() === 'exact';
-
-    this.exactSeries?.applyOptions({ visible: showExact });
-    this.minSeries?.applyOptions({ visible: !showExact });
-    this.maxSeries?.applyOptions({ visible: !showExact });
   }
 
   private getMetalDataPoints(): any[] {
