@@ -345,18 +345,24 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
       value: p.totalValue
     }));
 
+    // Deduplicate by timestamp (keep last value for each timestamp)
+    metalData = this.deduplicateByTime(metalData);
+
     // For single metal data point, show only a dot
     const metalSingle = metalData.length === 1;
     this.metalSeries?.applyOptions({ pointMarkersVisible: metalSingle, lineVisible: !metalSingle });
 
     const collectorPoints = this.getCollectorDataPoints();
 
-    const collectorData: LineDataPoint[] = collectorPoints
+    let collectorData: LineDataPoint[] = collectorPoints
       .filter(p => (p.minPrice ?? p.price) !== null)
       .map(p => ({
         time: this.toLocalTime(p.timestamp),
         value: p.minPrice ?? p.price!
       }));
+
+    // Deduplicate by timestamp (keep last value for each timestamp)
+    collectorData = this.deduplicateByTime(collectorData);
 
     this.metalSeries?.setData(metalData);
 
@@ -365,6 +371,14 @@ export class ValuationChartComponent implements OnInit, AfterViewInit, OnDestroy
     this.collectorSeries?.setData(collectorData);
 
     this.chart.timeScale().fitContent();
+  }
+
+  private deduplicateByTime(data: LineDataPoint[]): LineDataPoint[] {
+    const seen = new Map<number, LineDataPoint>();
+    for (const point of data) {
+      seen.set(point.time as number, point);
+    }
+    return Array.from(seen.values()).sort((a, b) => (a.time as number) - (b.time as number));
   }
 
   private getMetalDataPoints(): any[] {

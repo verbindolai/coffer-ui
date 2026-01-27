@@ -1,8 +1,7 @@
 // Timeframes
-export type Timeframe = '1h' | '1d' | '1w' | '1m' | '1y' | 'max';
+export type Timeframe = '1d' | '1w' | '1m' | '1y' | 'max';
 
 export const TIMEFRAME_LABELS: Record<Timeframe, string> = {
-  '1h': '1H',
   '1d': '1D',
   '1w': '1W',
   '1m': '1M',
@@ -10,7 +9,7 @@ export const TIMEFRAME_LABELS: Record<Timeframe, string> = {
   'max': 'MAX'
 };
 
-export const TIMEFRAMES: Timeframe[] = ['1h', '1d', '1w', '1m', '1y', 'max'];
+export const TIMEFRAMES: Timeframe[] = ['1d', '1w', '1m', '1y', 'max'];
 
 // Coin Valuation
 export interface MetalDataPoint {
