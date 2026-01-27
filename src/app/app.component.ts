@@ -12,10 +12,12 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
         <div class="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
           <!-- Logo -->
           <a routerLink="/" class="flex items-center gap-2.5 text-text-primary hover:text-accent transition-colors">
-            <div class="w-7 h-7 bg-accent rounded-md flex items-center justify-center">
-              <span class="text-bg-primary font-semibold text-sm">C</span>
-            </div>
-            <span class="font-semibold text-base tracking-tight">Coffer2</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor" class="w-7 h-7">
+              <rect x="15" y="15" width="70" height="18" rx="5" ry="5"/>
+              <rect x="20" y="41" width="65" height="18" rx="5" ry="5"/>
+              <rect x="10" y="67" width="70" height="18" rx="5" ry="5"/>
+            </svg>
+            <span class="font-semibold text-base tracking-tight">Coffer</span>
           </a>
 
           <!-- Navigation -->

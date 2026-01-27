@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor">
+  <!-- Coffer logo: three stacked bars representing coins/treasure -->
+  <!-- Top bar - extends right -->
+  <rect x="15" y="15" width="70" height="18" rx="5" ry="5"/>
+  <!-- Middle bar - centered -->
+  <rect x="20" y="41" width="65" height="18" rx="5" ry="5"/>
+  <!-- Bottom bar - extends left -->
+  <rect x="10" y="67" width="70" height="18" rx="5" ry="5"/>
+</svg>
