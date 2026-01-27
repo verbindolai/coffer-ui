@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Dark background -->
+  <rect width="100" height="100" rx="12" ry="12" fill="#08080c"/>
+  <!-- Coffer favicon: C-shaped stacked bars in white -->
+  <rect x="15" y="15" width="70" height="19" rx="5" ry="5" fill="#ffffff"/>
+  <rect x="15" y="40" width="55" height="19" rx="5" ry="5" fill="#ffffff"/>
+  <rect x="15" y="65" width="70" height="19" rx="5" ry="5" fill="#ffffff"/>
+</svg>
