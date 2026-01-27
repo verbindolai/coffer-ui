@@ -11,13 +11,16 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
       <header class="h-16 border-b border-border-subtle bg-bg-elevated sticky top-0 z-50">
         <div class="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
           <!-- Logo -->
-          <a routerLink="/" class="flex items-center gap-2.5 text-text-primary hover:text-accent transition-colors">
+          <a routerLink="/" class="flex items-center gap-3 text-text-primary hover:text-accent transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor" class="w-7 h-7">
-              <rect x="15" y="15" width="70" height="18" rx="5" ry="5"/>
-              <rect x="20" y="41" width="65" height="18" rx="5" ry="5"/>
-              <rect x="10" y="67" width="70" height="18" rx="5" ry="5"/>
+              <!-- Top bar -->
+              <rect x="10" y="10" width="80" height="22" rx="6" ry="6"/>
+              <!-- Middle bar - indented left to form C shape -->
+              <rect x="10" y="39" width="65" height="22" rx="6" ry="6"/>
+              <!-- Bottom bar - same position as top -->
+              <rect x="10" y="68" width="80" height="22" rx="6" ry="6"/>
             </svg>
-            <span class="font-semibold text-base tracking-tight">Coffer</span>
+            <span class="font-medium text-sm uppercase tracking-[0.2em]">Coffer</span>
           </a>
 
           <!-- Navigation -->
