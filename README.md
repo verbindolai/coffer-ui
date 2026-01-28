@@ -93,14 +93,14 @@ src/app/
 
 The UI uses a custom dark theme with these key colors:
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `bg-primary` | `#08080c` | Main background |
-| `bg-secondary` | `#0f0f14` | Card backgrounds |
-| `accent` | `#00d4aa` | Primary actions, highlights |
-| `accent-gold` | `#F7931A` | Metal valuations |
-| `positive` | `#22C55E` | Gains, success states |
-| `negative` | `#EF4444` | Losses, error states |
+| Token | Value | Usage                                         |
+|-------|-------|-----------------------------------------------|
+| `bg-primary` | `#08080c` | Main background                               |
+| `bg-secondary` | `#0f0f14` | Card backgrounds                              |
+| `accent` | `#00d4aa` | Primary actions, highlights, metal valuations |
+| `accent-gold` | `#F7931A` | Collector valuations                          |
+| `positive` | `#22C55E` | Gains, success states                         |
+| `negative` | `#EF4444` | Losses, error states                          |
 
 Typography uses **DM Sans** for UI text and **JetBrains Mono** for numerical data.
 
