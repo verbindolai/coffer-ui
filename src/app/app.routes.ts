@@ -22,6 +22,14 @@ export const routes: Routes = [
     loadComponent: () => import('./components/portfolio-overview/portfolio-overview.component').then(m => m.PortfolioOverviewComponent)
   },
   {
+    path: 'import/numista',
+    loadComponent: () => import('./components/numista-import/numista-import.component').then(m => m.NumistaImportComponent)
+  },
+  {
+    path: 'import/numista/callback',
+    loadComponent: () => import('./components/numista-import/numista-import.component').then(m => m.NumistaImportComponent)
+  },
+  {
     path: '**',
     redirectTo: ''
   }

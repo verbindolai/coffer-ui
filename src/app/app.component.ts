@@ -40,6 +40,13 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
             >
               Portfolio
             </a>
+            <a
+              routerLink="/import/numista"
+              routerLinkActive="bg-bg-tertiary text-text-primary"
+              class="px-4 py-2 rounded text-sm font-medium text-text-muted hover:text-text-secondary transition-colors"
+            >
+              Import
+            </a>
           </nav>
 
           <!-- Actions -->
