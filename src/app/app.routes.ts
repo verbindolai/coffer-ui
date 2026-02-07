@@ -10,6 +10,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/coin-form/coin-form.component').then(m => m.CoinFormComponent)
   },
   {
+    path: 'coins/type/:numistaId',
+    loadComponent: () => import('./components/coin-type-detail/coin-type-detail.component').then(m => m.CoinTypeDetailComponent)
+  },
+  {
     path: 'coins/:id',
     loadComponent: () => import('./components/coin-details/coin-details.component').then(m => m.CoinDetailsComponent)
   },

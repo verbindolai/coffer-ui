@@ -206,6 +206,42 @@ export interface CoinSearchParams {
   sort?: string;
 }
 
+// Grouped coin responses
+export interface CoinVariantSummary {
+  id: string;
+  yearOfMinting: number;
+  mintMark: string | null;
+  grade: CoinGrade | null;
+  quantity: number;
+}
+
+export interface CoinGroupResponse {
+  numistaId: string | null;
+  isGroup: boolean;
+  representativeCoinId: string;
+  title: string;
+  issuerCountry: string;
+  metalType: MetalType | null;
+  type: CoinType;
+  weightInGrams: number;
+  purity: number | null;
+  shape: CoinShape;
+  variantCount: number;
+  totalQuantity: number;
+  yearMin: number;
+  yearMax: number;
+  variants: CoinVariantSummary[];
+}
+
+export interface GroupedCoinSearchResponse {
+  groups: CoinGroupResponse[];
+  totalGroups: number;
+  totalCoinCount: number;
+  page: number;
+  size: number;
+  totalPages: number;
+}
+
 // Error response
 export interface ErrorResponse {
   message: string;

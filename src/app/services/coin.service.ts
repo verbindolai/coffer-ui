@@ -7,7 +7,8 @@ import {
   UpdateCoinRequest,
   CoinImageResponse,
   PageResponse,
-  CoinSearchParams
+  CoinSearchParams,
+  GroupedCoinSearchResponse
 } from '../models';
 import { CoinValuationResponse, CurrentPricesResponse, Timeframe } from '../models';
 
@@ -38,6 +39,31 @@ export class CoinService {
     if (params.sort) httpParams = httpParams.set('sort', params.sort);
 
     return this.http.get<PageResponse<CoinResponse>>(this.baseUrl, { params: httpParams });
+  }
+
+  getCoinsGrouped(params: CoinSearchParams = {}): Observable<GroupedCoinSearchResponse> {
+    let httpParams = new HttpParams();
+
+    if (params.country) httpParams = httpParams.set('country', params.country);
+    if (params.denomination) httpParams = httpParams.set('denomination', params.denomination);
+    if (params.grade) httpParams = httpParams.set('grade', params.grade);
+    if (params.coinType) httpParams = httpParams.set('coinType', params.coinType);
+    if (params.yearFrom) httpParams = httpParams.set('yearFrom', params.yearFrom.toString());
+    if (params.yearTo) httpParams = httpParams.set('yearTo', params.yearTo.toString());
+    if (params.metalType) httpParams = httpParams.set('metalType', params.metalType);
+    if (params.shape) httpParams = httpParams.set('shape', params.shape);
+    if (params.currency) httpParams = httpParams.set('currency', params.currency);
+    if (params.title) httpParams = httpParams.set('title', params.title);
+    if (params.numistaId) httpParams = httpParams.set('numistaId', params.numistaId);
+    if (params.page !== undefined) httpParams = httpParams.set('page', params.page.toString());
+    if (params.size !== undefined) httpParams = httpParams.set('size', params.size.toString());
+    if (params.sort) httpParams = httpParams.set('sort', params.sort);
+
+    return this.http.get<GroupedCoinSearchResponse>(`${this.baseUrl}/grouped`, { params: httpParams });
+  }
+
+  getCoinsByType(numistaId: string): Observable<CoinResponse[]> {
+    return this.http.get<CoinResponse[]>(`${this.baseUrl}/type/${numistaId}`);
   }
 
   getCoin(id: string): Observable<CoinResponse> {

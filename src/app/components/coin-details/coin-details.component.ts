@@ -16,12 +16,12 @@ import { formatCurrency, formatPurity, formatWeight, formatDimension, formatDate
     <div class="space-y-6">
       <!-- Header -->
       <div class="flex items-center gap-4">
-        <a routerLink="/" class="btn btn-ghost">
+        <a [routerLink]="backLink()" class="btn btn-ghost">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
-          Back
+          {{ backLabel() }}
         </a>
       </div>
 
@@ -260,6 +260,8 @@ export class CoinDetailsComponent implements OnInit {
   // State
   loading = signal(true);
   coin = signal<CoinResponse | null>(null);
+  backLink = signal('/');
+  backLabel = signal('Back');
   valuationData = signal<CoinValuationResponse | null>(null);
   valuationLoading = signal(false);
   selectedTimeframe = signal<Timeframe>('1d');
@@ -297,6 +299,16 @@ export class CoinDetailsComponent implements OnInit {
       next: (coin) => {
         this.coin.set(coin);
         this.loading.set(false);
+        if (coin.numistaId) {
+          this.coinService.getCoinsByType(coin.numistaId).subscribe({
+            next: (siblings) => {
+              if (siblings.length > 1) {
+                this.backLink.set(`/coins/type/${coin.numistaId}`);
+                this.backLabel.set('Back to Type');
+              }
+            }
+          });
+        }
       },
       error: (err) => {
         console.error('Error loading coin:', err);

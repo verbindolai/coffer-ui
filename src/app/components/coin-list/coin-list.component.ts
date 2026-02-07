@@ -1,10 +1,10 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CoinService } from '../../services/coin.service';
 import {
-  CoinResponse,
+  CoinGroupResponse,
   CoinSearchParams,
   CoinGrade,
   CoinType,
@@ -14,7 +14,7 @@ import {
   METAL_TYPE_LABELS
 } from '../../models/coin.model';
 import { CurrentPricesResponse } from '../../models/valuation.model';
-import { formatCurrency as formatCurrencyUtil, formatPurity, getRarityTier, getRarityColor } from '../../utils/format.utils';
+import { formatCurrency as formatCurrencyUtil, formatPurity } from '../../utils/format.utils';
 import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.component';
 
 @Component({
@@ -28,7 +28,10 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
         <div>
           <h1 class="text-2xl font-semibold text-text-primary">My Collection</h1>
           <p class="text-sm text-text-secondary mt-1">
-            {{ totalElements() }} coins in your collection
+            {{ totalCoinCount() }} coins in your collection
+            @if (totalGroups() !== totalCoinCount()) {
+              <span class="text-text-muted"> · {{ totalGroups() }} types</span>
+            }
           </p>
         </div>
       </div>
@@ -103,10 +106,7 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
         <div class="flex items-center justify-center py-16">
           <div class="spinner"></div>
         </div>
-      }
-
-      <!-- Empty State -->
-      @else if (coins().length === 0) {
+      } @else if (groups().length === 0) {
         <div class="empty-state">
           <div class="w-16 h-16 bg-bg-tertiary rounded-full flex items-center justify-center mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -126,95 +126,113 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
             </a>
           }
         </div>
-      }
-
-      <!-- Coin Grid -->
-      @else {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          @for (coin of coins(); track coin.id) {
+      } @else {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (group of groups(); track groupTrackBy(group)) {
             <a
-              [routerLink]="['/coins', coin.id]"
-              class="card hover:border-border-medium transition-all cursor-pointer group"
+              [routerLink]="getGroupLink(group)"
+              class="relative block cursor-pointer group"
+              [class.mb-3]="group.variantCount >= 3"
+              [class.mb-1.5]="group.variantCount === 2"
             >
-              <div class="flex gap-4">
-                <!-- 3D Coin Viewer -->
-                <div class="w-20 h-20 rounded-lg shrink-0 overflow-hidden">
-                  <app-coin-viewer-3d
-                    [coinId]="coin.id"
-                    [coin]="coin"
-                    size="small"
-                    [interactive]="false"
-                    [showControls]="false"
-                    [autoRotate]="true"
-                    [metalType]="coin.metalType"
-                    [rarityScore]="coin.rarity?.score ?? null"
-                  ></app-coin-viewer-3d>
-                </div>
-
-                <!-- Coin Info -->
-                <div class="flex-1 min-w-0">
-                  <h3 class="font-medium text-text-primary truncate group-hover:text-accent transition-colors">
-                    {{ coin.title }}
-                  </h3>
-                  <p class="text-sm text-text-secondary mt-0.5">
-                    {{ coin.yearOfMinting }} · {{ coin.issuerCountry }}
-                  </p>
-
-                  <div class="flex flex-wrap gap-2 mt-2">
-                    <!-- Metal Badge -->
-                    @if (coin.metalType) {
-                      <span [class]="getMetalBadgeClass(coin.metalType)">
-                        {{ metalTypeLabels[coin.metalType] }}
-                      </span>
-                    }
-
-                    <!-- Grade Badge -->
-                    @if (coin.grade) {
-                      <span class="badge bg-bg-tertiary text-text-secondary">
-                        {{ gradeLabels[coin.grade] }}
-                      </span>
-                    }
-
-                    <!-- Rarity -->
-                    @if (coin.rarity && coin.rarity.score) {
-                      <span [class]="'badge bg-bg-tertiary ' + getRarityColor(coin.rarity.score)">
-                        {{ getRarityTier(coin.rarity.score) }}
-                      </span>
-                    }
-                  </div>
-
-                  <!-- Weight & Purity -->
-                  <div class="flex gap-4 mt-2 text-xs text-text-muted">
-                    <span>{{ coin.weightInGrams }}g</span>
-                    @if (coin.purity) {
-                      <span>{{ formatPurity(coin.purity) }} pure</span>
-                    }
-                    @if (coin.quantity > 1) {
-                      <span>×{{ coin.quantity }}</span>
-                    }
-                  </div>
-                </div>
-              </div>
-
-              <!-- Prices -->
-              @if (getCoinPrice(coin.id).metal || getCoinPrice(coin.id).collector) {
-                <div class="mt-3 pt-3 border-t border-border-subtle flex gap-4 text-xs">
-                  @if (getCoinPrice(coin.id).metal) {
-                    <div class="flex items-center gap-1.5">
-                      <div class="w-1 h-3 bg-accent-emerald rounded-full"></div>
-                      <span class="text-text-muted">Metal:</span>
-                      <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(coin.id).metal!) }}</span>
-                    </div>
-                  }
-                  @if (getCoinPrice(coin.id).collector) {
-                    <div class="flex items-center gap-1.5">
-                      <div class="w-1 h-3 bg-accent-gold rounded-full"></div>
-                      <span class="text-text-muted">Collector:</span>
-                      <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(coin.id).collector!) }}</span>
-                    </div>
-                  }
-                </div>
+              <!-- Stack layer 2 (deepest, for 3+ variants) -->
+              @if (group.variantCount >= 3) {
+                <div class="card absolute inset-0 mx-3 pointer-events-none
+                            translate-y-2.5 opacity-30
+                            transition-all duration-200 ease-out
+                            group-hover:translate-y-3 group-hover:mx-3.5 group-hover:opacity-40"
+                     aria-hidden="true"></div>
               }
+              <!-- Stack layer 1 (for 2+ variants) -->
+              @if (group.variantCount >= 2) {
+                <div class="card absolute inset-0 mx-1.5 pointer-events-none
+                            translate-y-[5px] opacity-50
+                            transition-all duration-200 ease-out
+                            group-hover:translate-y-1.5 group-hover:mx-2 group-hover:opacity-60"
+                     aria-hidden="true"></div>
+              }
+
+              <!-- Main Card -->
+              <div class="card hover:border-border-medium relative z-10
+                          transition-all duration-200 ease-out
+                          group-hover:-translate-y-px">
+                <div class="flex gap-4">
+                  <!-- 3D Coin Viewer -->
+                  <div class="w-20 h-20 rounded-lg shrink-0 overflow-hidden">
+                    <app-coin-viewer-3d
+                      [coinId]="group.representativeCoinId"
+                      size="small"
+                      [interactive]="false"
+                      [showControls]="false"
+                      [autoRotate]="true"
+                      [metalType]="group.metalType"
+                    ></app-coin-viewer-3d>
+                  </div>
+
+                  <!-- Coin Info -->
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-text-primary truncate group-hover:text-accent transition-colors">
+                      {{ group.title }}
+                    </h3>
+                    <p class="text-sm text-text-secondary mt-0.5">
+                      {{ getYearDisplay(group) }} · {{ group.issuerCountry }}
+                    </p>
+
+                    <div class="flex flex-wrap gap-2 mt-2">
+                      <!-- Metal Badge -->
+                      @if (group.metalType) {
+                        <span [class]="getMetalBadgeClass(group.metalType)">
+                          {{ metalTypeLabels[group.metalType] }}
+                        </span>
+                      }
+
+                      <!-- Variant Count Badge -->
+                      @if (group.isGroup) {
+                        <span class="badge bg-accent/10 text-accent">
+                          {{ group.variantCount }} variants
+                        </span>
+                      }
+
+                      <!-- Total Quantity Badge -->
+                      @if (group.totalQuantity > 1) {
+                        <span class="badge bg-bg-tertiary text-text-secondary">
+                          ×{{ group.totalQuantity }} total
+                        </span>
+                      }
+                    </div>
+
+                    <!-- Weight & Purity -->
+                    <div class="flex gap-4 mt-2 text-xs text-text-muted">
+                      <span>{{ group.weightInGrams }}g</span>
+                      @if (group.purity) {
+                        <span>{{ formatPurity(group.purity) }} pure</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Prices (for standalone coins) -->
+                @if (!group.isGroup) {
+                  @if (getCoinPrice(group.representativeCoinId).metal || getCoinPrice(group.representativeCoinId).collector) {
+                    <div class="mt-3 pt-3 border-t border-border-subtle flex gap-4 text-xs">
+                      @if (getCoinPrice(group.representativeCoinId).metal) {
+                        <div class="flex items-center gap-1.5">
+                          <div class="w-1 h-3 bg-accent-emerald rounded-full"></div>
+                          <span class="text-text-muted">Metal:</span>
+                          <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(group.representativeCoinId).metal!) }}</span>
+                        </div>
+                      }
+                      @if (getCoinPrice(group.representativeCoinId).collector) {
+                        <div class="flex items-center gap-1.5">
+                          <div class="w-1 h-3 bg-accent-gold rounded-full"></div>
+                          <span class="text-text-muted">Collector:</span>
+                          <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(group.representativeCoinId).collector!) }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+              </div>
             </a>
           }
         </div>
@@ -223,8 +241,8 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
         @if (totalPages() > 1) {
           <div class="flex items-center justify-between pt-4 border-t border-border-subtle">
             <p class="text-sm text-text-muted">
-              Showing {{ (currentPage() * pageSize()) + 1 }}-{{ Math.min((currentPage() + 1) * pageSize(), totalElements()) }}
-              of {{ totalElements() }} coins
+              Showing page {{ currentPage() + 1 }} of {{ totalPages() }}
+              ({{ totalCoinCount() }} coins total)
             </p>
 
             <div class="flex gap-2">
@@ -256,10 +274,11 @@ export class CoinListComponent implements OnInit {
   private coinService = inject(CoinService);
 
   // State
-  coins = signal<CoinResponse[]>([]);
+  groups = signal<CoinGroupResponse[]>([]);
   coinPrices = signal<Record<string, CurrentPricesResponse>>({});
   loading = signal(true);
-  totalElements = signal(0);
+  totalGroups = signal(0);
+  totalCoinCount = signal(0);
   totalPages = signal(0);
   currentPage = signal(0);
   pageSize = signal(12);
@@ -281,10 +300,7 @@ export class CoinListComponent implements OnInit {
 
   // Utility functions
   formatPurity = formatPurity;
-  getRarityTier = getRarityTier;
   formatPrice = formatCurrencyUtil;
-  getRarityColor = getRarityColor;
-  Math = Math;
 
   private filterTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -307,13 +323,14 @@ export class CoinListComponent implements OnInit {
     if (this.filterGrade) params.grade = this.filterGrade as CoinGrade;
     if (this.filterCoinType) params.coinType = this.filterCoinType as CoinType;
 
-    this.coinService.getCoins(params).subscribe({
+    this.coinService.getCoinsGrouped(params).subscribe({
       next: (response) => {
-        this.coins.set(response.content);
-        this.totalElements.set(response.totalElements);
+        this.groups.set(response.groups);
+        this.totalGroups.set(response.totalGroups);
+        this.totalCoinCount.set(response.totalCoinCount);
         this.totalPages.set(response.totalPages);
         this.loading.set(false);
-        this.loadCoinPrices(response.content);
+        this.loadCoinPrices(response.groups);
       },
       error: (err) => {
         console.error('Error loading coins:', err);
@@ -322,34 +339,31 @@ export class CoinListComponent implements OnInit {
     });
   }
 
-  loadCoinPrices(coins: CoinResponse[]): void {
-    coins.forEach(coin => {
-      this.coinService.getCurrentPrices(coin.id).subscribe({
-        next: (prices) => {
-          this.coinPrices.update(current => ({
-            ...current,
-            [coin.id]: prices
-          }));
-        },
-        error: () => {
-          // Silently fail for price loading
-        }
+  loadCoinPrices(groups: CoinGroupResponse[]): void {
+    groups
+      .filter(g => !g.isGroup)
+      .forEach(group => {
+        this.coinService.getCurrentPrices(group.representativeCoinId).subscribe({
+          next: (prices) => {
+            this.coinPrices.update(current => ({
+              ...current,
+              [group.representativeCoinId]: prices
+            }));
+          },
+          error: () => {}
+        });
       });
-    });
   }
 
   getCoinPrice(coinId: string): { metal: number | null; collector: number | null } {
     const prices = this.coinPrices()[coinId];
     if (!prices) return { metal: null, collector: null };
 
-    // Get metal value
     const metalValue = prices.metalValue?.totalValue ?? null;
 
-    // Get collector value for the coin's grade
     let collectorValue: number | null = null;
     const collectorPrices = prices.collectorPrices;
     if (collectorPrices?.gradePrices?.length) {
-      // Find the price for the coin's grade, or use the first available
       const coinGrade = collectorPrices.coinGrade;
       const gradePrice = coinGrade
         ? collectorPrices.gradePrices.find(gp => gp.grade === coinGrade)
@@ -360,10 +374,25 @@ export class CoinListComponent implements OnInit {
       }
     }
 
-    return {
-      metal: metalValue,
-      collector: collectorValue
-    };
+    return { metal: metalValue, collector: collectorValue };
+  }
+
+  getYearDisplay(group: CoinGroupResponse): string {
+    if (group.yearMin === group.yearMax) {
+      return String(group.yearMin);
+    }
+    return `${group.yearMin}–${group.yearMax}`;
+  }
+
+  getGroupLink(group: CoinGroupResponse): string[] {
+    if (group.isGroup && group.numistaId) {
+      return ['/coins/type', group.numistaId];
+    }
+    return ['/coins', group.representativeCoinId];
+  }
+
+  groupTrackBy(group: CoinGroupResponse): string {
+    return group.numistaId ?? group.representativeCoinId;
   }
 
   onFilterChange(): void {
