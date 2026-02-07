@@ -217,29 +217,32 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
                 <!-- Prices -->
                 @if (getCoinPrice(group.representativeCoinId).metal || getCoinPrice(group.representativeCoinId).collector) {
                   <div class="mt-3 pt-3 border-t border-border-subtle text-xs">
-                    <div class="flex gap-4">
+                    <div class="flex gap-3">
                       @if (getCoinPrice(group.representativeCoinId).metal) {
-                        <div class="flex items-center gap-1.5">
-                          <div class="w-1 h-3 bg-accent-emerald rounded-full"></div>
-                          <span class="text-text-muted">Metal{{ group.totalQuantity > 1 ? ' /ea' : '' }}:</span>
+                        <div class="flex items-center gap-1" title="Metal value{{ group.totalQuantity > 1 ? ' per coin' : '' }}">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-accent-emerald shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 19h18l-3-12H6z"/><path d="M6 7l1-3h10l1 3"/>
+                          </svg>
                           <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(group.representativeCoinId).metal!) }}</span>
                         </div>
                       }
                       @if (getCoinPrice(group.representativeCoinId).collector) {
-                        <div class="flex items-center gap-1.5">
-                          <div class="w-1 h-3 bg-accent-gold rounded-full"></div>
-                          <span class="text-text-muted">Collector{{ group.totalQuantity > 1 ? ' /ea' : '' }}:</span>
+                        <div class="flex items-center gap-1" title="Collector value{{ group.totalQuantity > 1 ? ' per coin' : '' }}">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-accent-gold shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/>
+                          </svg>
                           <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(group.representativeCoinId).collector!) }}</span>
                         </div>
                       }
+                      @if (group.totalQuantity > 1 && getCoinPrice(group.representativeCoinId).metal) {
+                        <div class="flex items-center gap-1 ml-auto" title="Total metal value (all {{ group.totalQuantity }} coins)">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-text-muted shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"/>
+                          </svg>
+                          <span class="text-text-primary font-semibold font-mono">{{ formatPrice(getCoinPrice(group.representativeCoinId).metal! * group.totalQuantity) }}</span>
+                        </div>
+                      }
                     </div>
-                    @if (group.totalQuantity > 1 && getCoinPrice(group.representativeCoinId).metal) {
-                      <div class="flex items-center gap-1.5 mt-1.5">
-                        <div class="w-1 h-3 bg-accent-emerald/50 rounded-full"></div>
-                        <span class="text-text-muted">Total (×{{ group.totalQuantity }}):</span>
-                        <span class="text-text-primary font-semibold font-mono">{{ formatPrice(getCoinPrice(group.representativeCoinId).metal! * group.totalQuantity) }}</span>
-                      </div>
-                    }
                   </div>
                 }
               </div>
