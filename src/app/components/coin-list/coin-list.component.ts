@@ -28,7 +28,10 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
         <div>
           <h1 class="text-2xl font-semibold text-text-primary">My Collection</h1>
           <p class="text-sm text-text-secondary mt-1">
-            {{ totalCoinCount() }} coins in your collection
+            {{ totalQuantityCount() }} coins in your collection
+            @if (totalCoinCount() !== totalQuantityCount()) {
+              <span class="text-text-muted"> · {{ totalCoinCount() }} unique issues</span>
+            }
             @if (totalGroups() !== totalCoinCount()) {
               <span class="text-text-muted"> · {{ totalGroups() }} types</span>
             }
@@ -211,26 +214,33 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
                   </div>
                 </div>
 
-                <!-- Prices (for standalone coins) -->
-                @if (!group.isGroup) {
-                  @if (getCoinPrice(group.representativeCoinId).metal || getCoinPrice(group.representativeCoinId).collector) {
-                    <div class="mt-3 pt-3 border-t border-border-subtle flex gap-4 text-xs">
+                <!-- Prices -->
+                @if (getCoinPrice(group.representativeCoinId).metal || getCoinPrice(group.representativeCoinId).collector) {
+                  <div class="mt-3 pt-3 border-t border-border-subtle text-xs">
+                    <div class="flex gap-4">
                       @if (getCoinPrice(group.representativeCoinId).metal) {
                         <div class="flex items-center gap-1.5">
                           <div class="w-1 h-3 bg-accent-emerald rounded-full"></div>
-                          <span class="text-text-muted">Metal:</span>
+                          <span class="text-text-muted">Metal{{ group.totalQuantity > 1 ? ' /ea' : '' }}:</span>
                           <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(group.representativeCoinId).metal!) }}</span>
                         </div>
                       }
                       @if (getCoinPrice(group.representativeCoinId).collector) {
                         <div class="flex items-center gap-1.5">
                           <div class="w-1 h-3 bg-accent-gold rounded-full"></div>
-                          <span class="text-text-muted">Collector:</span>
+                          <span class="text-text-muted">Collector{{ group.totalQuantity > 1 ? ' /ea' : '' }}:</span>
                           <span class="text-text-primary font-medium font-mono">{{ formatPrice(getCoinPrice(group.representativeCoinId).collector!) }}</span>
                         </div>
                       }
                     </div>
-                  }
+                    @if (group.totalQuantity > 1 && getCoinPrice(group.representativeCoinId).metal) {
+                      <div class="flex items-center gap-1.5 mt-1.5">
+                        <div class="w-1 h-3 bg-accent-emerald/50 rounded-full"></div>
+                        <span class="text-text-muted">Total (×{{ group.totalQuantity }}):</span>
+                        <span class="text-text-primary font-semibold font-mono">{{ formatPrice(getCoinPrice(group.representativeCoinId).metal! * group.totalQuantity) }}</span>
+                      </div>
+                    }
+                  </div>
                 }
               </div>
             </a>
@@ -242,7 +252,7 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
           <div class="flex items-center justify-between pt-4 border-t border-border-subtle">
             <p class="text-sm text-text-muted">
               Showing page {{ currentPage() + 1 }} of {{ totalPages() }}
-              ({{ totalCoinCount() }} coins total)
+              ({{ totalQuantityCount() }} coins total)
             </p>
 
             <div class="flex gap-2">
@@ -279,6 +289,7 @@ export class CoinListComponent implements OnInit {
   loading = signal(true);
   totalGroups = signal(0);
   totalCoinCount = signal(0);
+  totalQuantityCount = signal(0);
   totalPages = signal(0);
   currentPage = signal(0);
   pageSize = signal(12);
@@ -328,6 +339,7 @@ export class CoinListComponent implements OnInit {
         this.groups.set(response.groups);
         this.totalGroups.set(response.totalGroups);
         this.totalCoinCount.set(response.totalCoinCount);
+        this.totalQuantityCount.set(response.totalQuantityCount);
         this.totalPages.set(response.totalPages);
         this.loading.set(false);
         this.loadCoinPrices(response.groups);
@@ -340,19 +352,17 @@ export class CoinListComponent implements OnInit {
   }
 
   loadCoinPrices(groups: CoinGroupResponse[]): void {
-    groups
-      .filter(g => !g.isGroup)
-      .forEach(group => {
-        this.coinService.getCurrentPrices(group.representativeCoinId).subscribe({
-          next: (prices) => {
-            this.coinPrices.update(current => ({
-              ...current,
-              [group.representativeCoinId]: prices
-            }));
-          },
-          error: () => {}
-        });
+    groups.forEach(group => {
+      this.coinService.getCurrentPrices(group.representativeCoinId).subscribe({
+        next: (prices) => {
+          this.coinPrices.update(current => ({
+            ...current,
+            [group.representativeCoinId]: prices
+          }));
+        },
+        error: () => {}
       });
+    });
   }
 
   getCoinPrice(coinId: string): { metal: number | null; collector: number | null } {

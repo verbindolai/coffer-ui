@@ -237,6 +237,7 @@ export interface GroupedCoinSearchResponse {
   groups: CoinGroupResponse[];
   totalGroups: number;
   totalCoinCount: number;
+  totalQuantityCount: number;
   page: number;
   size: number;
   totalPages: number;

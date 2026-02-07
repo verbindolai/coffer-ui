@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { PortfolioService } from '../../services/portfolio.service';
 import { CoinService } from '../../services/coin.service';
+import { GroupedCoinSearchResponse } from '../../models/coin.model';
 import { PortfolioValuationResponse, Timeframe } from '../../models/valuation.model';
 import { ValuationChartComponent } from '../chart/valuation-chart.component';
 import { formatCurrency, formatWeight } from '../../utils/format.utils';
@@ -35,7 +36,10 @@ import { formatCurrency, formatWeight } from '../../utils/format.utils';
             </div>
             <div>
               <p class="text-xs text-text-muted uppercase tracking-wider">Total Coins</p>
-              <p class="text-xl font-semibold text-text-primary">{{ totalCoins() }}</p>
+              <p class="text-xl font-semibold text-text-primary">{{ totalQuantity() }}</p>
+              @if (totalCoins() !== totalQuantity()) {
+                <p class="text-xs text-text-muted mt-0.5">{{ totalCoins() }} unique issues</p>
+              }
             </div>
           </div>
         </div>
@@ -139,6 +143,7 @@ export class PortfolioOverviewComponent implements OnInit {
   valuationLoading = signal(false);
   selectedTimeframe = signal<Timeframe>('1d');
   totalCoins = signal(0);
+  totalQuantity = signal(0);
 
   // Utility functions
   formatCurrency = formatCurrency;
@@ -177,9 +182,10 @@ export class PortfolioOverviewComponent implements OnInit {
   }
 
   loadCoinCount(): void {
-    this.coinService.getCoins({ size: 1 }).subscribe({
+    this.coinService.getCoinsGrouped({ size: 1 }).subscribe({
       next: (response) => {
-        this.totalCoins.set(response.totalElements);
+        this.totalCoins.set(response.totalCoinCount);
+        this.totalQuantity.set(response.totalQuantityCount);
       }
     });
   }

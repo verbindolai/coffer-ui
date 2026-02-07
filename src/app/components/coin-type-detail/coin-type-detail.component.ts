@@ -104,6 +104,55 @@ import { CoinViewer3dComponent } from '../coin-viewer-3d/coin-viewer-3d.componen
               </div>
             </div>
 
+            <!-- Prices Summary -->
+            @if (getTotalMetalValue() || getTotalCollectorValue()) {
+              <div class="card">
+                <h2 class="text-lg font-medium text-text-primary mb-4">Valuation</h2>
+                <div class="space-y-3">
+                  @if (getPerCoinMetalValue()) {
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-1 h-4 bg-accent-emerald rounded-full"></div>
+                        <span class="text-text-secondary text-sm">Metal value per coin</span>
+                      </div>
+                      <span class="text-text-primary font-medium font-mono">{{ formatCurrency(getPerCoinMetalValue()!) }}</span>
+                    </div>
+                  }
+                  @if (getPerCoinCollectorValue()) {
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-1 h-4 bg-accent-gold rounded-full"></div>
+                        <span class="text-text-secondary text-sm">Collector value per coin</span>
+                      </div>
+                      <span class="text-text-primary font-medium font-mono">{{ formatCurrency(getPerCoinCollectorValue()!) }}</span>
+                    </div>
+                  }
+                  @if (getTotalQuantity() > 1) {
+                    <div class="border-t border-border-subtle pt-3 space-y-3">
+                      @if (getTotalMetalValue()) {
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center gap-2">
+                            <div class="w-1 h-4 bg-accent-emerald/50 rounded-full"></div>
+                            <span class="text-text-secondary text-sm">Total metal (×{{ getTotalQuantity() }})</span>
+                          </div>
+                          <span class="text-text-primary font-semibold font-mono">{{ formatCurrency(getTotalMetalValue()!) }}</span>
+                        </div>
+                      }
+                      @if (getTotalCollectorValue()) {
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center gap-2">
+                            <div class="w-1 h-4 bg-accent-gold/50 rounded-full"></div>
+                            <span class="text-text-secondary text-sm">Total collector (×{{ getTotalQuantity() }})</span>
+                          </div>
+                          <span class="text-text-primary font-semibold font-mono">{{ formatCurrency(getTotalCollectorValue()!) }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
             <!-- Variants List -->
             <div class="card">
               <h2 class="text-lg font-medium text-text-primary mb-4">Variants</h2>
@@ -215,10 +264,22 @@ export class CoinTypeDetailComponent implements OnInit {
   getCoinPrice(coinId: string): { metal: number | null; collector: number | null } {
     const prices = this.coinPrices()[coinId];
     if (!prices) return { metal: null, collector: null };
-    return {
-      metal: prices.metalValue?.totalValue ?? null,
-      collector: null
-    };
+
+    const metalValue = prices.metalValue?.totalValue ?? null;
+
+    let collectorValue: number | null = null;
+    const collectorPrices = prices.collectorPrices;
+    if (collectorPrices?.gradePrices?.length) {
+      const coinGrade = collectorPrices.coinGrade;
+      const gradePrice = coinGrade
+        ? collectorPrices.gradePrices.find(gp => gp.grade === coinGrade)
+        : collectorPrices.gradePrices[0];
+      if (gradePrice) {
+        collectorValue = gradePrice.minPrice;
+      }
+    }
+
+    return { metal: metalValue, collector: collectorValue };
   }
 
   getYearRange(): string {
@@ -230,6 +291,48 @@ export class CoinTypeDetailComponent implements OnInit {
 
   getTotalQuantity(): number {
     return this.coins().reduce((sum, c) => sum + c.quantity, 0);
+  }
+
+  getPerCoinMetalValue(): number | null {
+    const firstCoin = this.coins()[0];
+    if (!firstCoin) return null;
+    return this.getCoinPrice(firstCoin.id).metal;
+  }
+
+  getPerCoinCollectorValue(): number | null {
+    const firstCoin = this.coins()[0];
+    if (!firstCoin) return null;
+    return this.getCoinPrice(firstCoin.id).collector;
+  }
+
+  getTotalMetalValue(): number | null {
+    const coins = this.coins();
+    if (coins.length === 0) return null;
+    let total = 0;
+    let hasAny = false;
+    for (const coin of coins) {
+      const price = this.getCoinPrice(coin.id).metal;
+      if (price !== null) {
+        total += price * coin.quantity;
+        hasAny = true;
+      }
+    }
+    return hasAny ? total : null;
+  }
+
+  getTotalCollectorValue(): number | null {
+    const coins = this.coins();
+    if (coins.length === 0) return null;
+    let total = 0;
+    let hasAny = false;
+    for (const coin of coins) {
+      const price = this.getCoinPrice(coin.id).collector;
+      if (price !== null) {
+        total += price * coin.quantity;
+        hasAny = true;
+      }
+    }
+    return hasAny ? total : null;
   }
 
   getMetalBadgeClass(metalType: MetalType): string {
