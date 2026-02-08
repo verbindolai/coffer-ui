@@ -132,8 +132,7 @@ export class NumistaImportComponent implements OnInit {
 
   connectToNumista(): void {
     this.connecting.set(true);
-    const redirectUri = window.location.origin + '/import/numista/callback';
-    this.importService.getAuthUrl(redirectUri).subscribe({
+    this.importService.getAuthUrl().subscribe({
       next: (response) => {
         window.location.href = response.url;
       },
@@ -147,8 +146,7 @@ export class NumistaImportComponent implements OnInit {
 
   private startImport(code: string): void {
     this.state.set('importing');
-    const redirectUri = window.location.origin + '/import/numista/callback';
-    this.importService.importCollection(code, redirectUri).subscribe({
+    this.importService.importCollection(code).subscribe({
       next: (result) => {
         this.result.set(result);
         this.state.set('result');
