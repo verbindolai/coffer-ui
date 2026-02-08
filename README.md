@@ -35,7 +35,7 @@
 
 ## Quick Start
 
-The easiest way to run Coffer is with Docker. See [coffer-deploy](https://github.com/YOUR_USERNAME/coffer-deploy) for a complete setup with backend and database.
+The easiest way to run Coffer is with Docker. See [coffer-deploy](https://github.com/verbindolai/coffer-deploy) for a complete setup with backend and database.
 
 ### Development Setup
 
@@ -53,7 +53,7 @@ npm start
 
 Navigate to `http://localhost:4200`. The app will automatically reload on file changes.
 
-> **Note:** You'll need the [backend API](https://github.com/YOUR_USERNAME/coffer2) running for full functionality.
+> **Note:** You'll need the [backend API](https://github.com/verbindolai/coffer) running for full functionality.
 
 ## Development
 
@@ -71,22 +71,6 @@ npm test
 
 # Run linting
 npm run lint
-```
-
-### Project Structure
-
-```
-src/app/
-├── components/         # UI components
-│   ├── coin-list/      # Collection table view
-│   ├── coin-details/   # Individual coin view
-│   ├── coin-form/      # Add/edit coin form
-│   ├── coin-viewer-3d/ # 3D visualization
-│   ├── portfolio-overview/
-│   └── shared/         # Reusable components
-├── services/           # API communication
-├── models/             # TypeScript interfaces
-└── app.routes.ts       # Routing configuration
 ```
 
 ### Design System
