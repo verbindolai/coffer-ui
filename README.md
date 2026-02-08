@@ -86,7 +86,7 @@ npm run lint
 
 ## Related Projects
 
-- [coffer2](https://github.com/verbindolai/coffer2) - Spring Boot backend API
+- [coffer](https://github.com/verbindolai/coffer2) - Spring Boot backend API
 - [coffer-deploy](https://github.com/verbindolai/coffer-deploy) - Docker deployment
 
 ## License
