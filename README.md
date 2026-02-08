@@ -41,7 +41,7 @@ The easiest way to run Coffer is with Docker. See [coffer-deploy](https://github
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/coffer2-ui.git
+git clone https://github.com/verbindolai/coffer2-ui.git
 cd coffer2-ui
 
 # Install dependencies
@@ -53,7 +53,7 @@ npm start
 
 Navigate to `http://localhost:4200`. The app will automatically reload on file changes.
 
-> **Note:** You'll need the [backend API](https://github.com/verbindolai/coffer) running for full functionality.
+> **Note:** You'll need the [backend API](https://github.com/verbindolai/coffer2) running for full functionality.
 
 ## Development
 
@@ -73,37 +73,22 @@ npm test
 npm run lint
 ```
 
-### Design System
-
-The UI uses a custom dark theme with these key colors:
-
-| Token | Value | Usage                                         |
-|-------|-------|-----------------------------------------------|
-| `bg-primary` | `#08080c` | Main background                               |
-| `bg-secondary` | `#0f0f14` | Card backgrounds                              |
-| `accent` | `#00d4aa` | Primary actions, highlights, metal valuations |
-| `accent-gold` | `#F7931A` | Collector valuations                          |
-| `positive` | `#22C55E` | Gains, success states                         |
-| `negative` | `#EF4444` | Losses, error states                          |
-
-Typography uses **DM Sans** for UI text and **JetBrains Mono** for numerical data.
-
 ## Tech Stack
 
 | Category | Technology |
 |----------|------------|
-| **Framework** | Angular 18 |
-| **Language** | TypeScript 5.5 |
-| **Styling** | Tailwind CSS 3.4 |
+| **Framework** | Angular |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS |
 | **3D Graphics** | Three.js |
 | **Charts** | Lightweight Charts |
 | **Build** | Angular CLI |
 
 ## Related Projects
 
-- [coffer2](https://github.com/YOUR_USERNAME/coffer2) - Spring Boot backend API
-- [coffer-deploy](https://github.com/YOUR_USERNAME/coffer-deploy) - Docker deployment
+- [coffer2](https://github.com/verbindolai/coffer2) - Spring Boot backend API
+- [coffer-deploy](https://github.com/verbindolai/coffer-deploy) - Docker deployment
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) for details.
+AGPL-3.0 License - See [LICENSE](LICENSE) for details.
