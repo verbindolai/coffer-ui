@@ -132,7 +132,8 @@ export class NumistaImportComponent implements OnInit {
 
   connectToNumista(): void {
     this.connecting.set(true);
-    this.importService.getAuthUrl().subscribe({
+    const redirectUri = window.location.origin + '/import/numista/callback';
+    this.importService.getAuthUrl(redirectUri).subscribe({
       next: (response) => {
         window.location.href = response.url;
       },

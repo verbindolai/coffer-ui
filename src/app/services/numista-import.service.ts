@@ -20,8 +20,10 @@ export class NumistaImportService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = '/api/v1/import/numista';
 
-  getAuthUrl(): Observable<NumistaAuthUrlResponse> {
-    return this.http.get<NumistaAuthUrlResponse>(`${this.baseUrl}/auth-url`);
+  getAuthUrl(redirectUri: string): Observable<NumistaAuthUrlResponse> {
+    return this.http.get<NumistaAuthUrlResponse>(`${this.baseUrl}/auth-url`, {
+      params: { redirectUri }
+    });
   }
 
   importCollection(code: string, redirectUri: string): Observable<NumistaImportResult> {
