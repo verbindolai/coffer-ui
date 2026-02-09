@@ -22,8 +22,11 @@ type ImportState = 'initial' | 'importing' | 'result' | 'error';
             </svg>
           </div>
           <h1 class="text-xl font-semibold text-text-primary mb-2">Import from Numista</h1>
-          <p class="text-text-muted text-sm mb-8">
+          <p class="text-text-muted text-sm mb-4">
             Connect your Numista account to import your entire coin collection. Coins already in your collection will be skipped.
+          </p>
+          <p class="text-text-muted text-xs mb-8 bg-bg-tertiary rounded-lg px-4 py-3">
+            Note: Importing requires multiple Numista API calls per coin (fetching type details, images, and prices). Large collections may take several minutes and consume a significant number of API requests.
           </p>
           <button
             (click)="connectToNumista()"
