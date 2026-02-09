@@ -1,22 +1,27 @@
 <p align="center">
-  <img src="public/favicon.svg" width="80" alt="Coffer Logo">
+  <img src="https://raw.githubusercontent.com/verbindolai/coffer-ui/refs/heads/master/public/favicon.svg" width="80" alt="Coffer Logo">
 </p>
 
 <h1 align="center">Coffer</h1>
 
-<p align="center">
-  <strong>Modern coin collection portfolio management with real-time metal valuations</strong>
+<p align="center">  
+  <strong>Track your coins.</strong>
+  <strong>Know their worth.</strong>
+  
+  Self-hosted coin collection manager with real-time precious metal valuations, portfolio analytics, and Numista catalog integration.
+
 </p>
 
 <p align="center">
   <a href="#features">Features</a> •
-  <a href="#demo">Demo</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#development">Development</a> •
   <a href="#tech-stack">Tech Stack</a>
 </p>
 
----
+<p align="center">
+  <img src="docs/demo.gif" alt="Coffer demo" width="100%">
+</p>
 
 ## Features
 
@@ -26,12 +31,6 @@
 - **3D Coin Viewer** - Examine your coins in an interactive 3D visualization
 - **Numista Integration** - Search and import coin data from the world's largest numismatic catalog
 - **Dark Theme** - Easy on the eyes with a sleek dark interface and teal accents
-
-## Demo
-
-<p align="center">
-  <img src="docs/demo.gif" alt="Coffer demo" width="100%">
-</p>
 
 ## Quick Start
 
