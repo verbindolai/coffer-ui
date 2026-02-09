@@ -30,7 +30,7 @@
 ## Demo
 
 <p align="center">
-  <video src="docs/demo.mp4" autoplay muted loop playsinline width="100%"></video>
+  <img src="docs/demo.gif" alt="Coffer demo" width="100%">
 </p>
 
 ## Quick Start
