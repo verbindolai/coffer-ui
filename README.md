@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="#features">Features</a> •
-  <a href="#screenshots">Screenshots</a> •
+  <a href="#demo">Demo</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#development">Development</a> •
   <a href="#tech-stack">Tech Stack</a>
@@ -27,10 +27,10 @@
 - **Numista Integration** - Search and import coin data from the world's largest numismatic catalog
 - **Dark Theme** - Easy on the eyes with a sleek dark interface and teal accents
 
-## Screenshots
+## Demo
 
 <p align="center">
-  <em>Portfolio overview with real-time valuations</em>
+  <video src="docs/demo.mp4" autoplay muted loop playsinline width="100%"></video>
 </p>
 
 ## Quick Start
@@ -83,6 +83,10 @@ npm run lint
 | **3D Graphics** | Three.js |
 | **Charts** | Lightweight Charts |
 | **Build** | Angular CLI |
+
+## Contributing
+
+Interested in contributing? See the [Contributing Guide](https://github.com/verbindolai/coffer2/blob/master/CONTRIBUTING.md) for setup instructions and development workflow.
 
 ## Related Projects
 
